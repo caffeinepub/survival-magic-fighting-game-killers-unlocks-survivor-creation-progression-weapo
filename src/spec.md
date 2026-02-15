@@ -1,12 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Add an Admin Panel “Events” tab for Admin Panel owners to create and view their own events, and update the Admin Panel purchase cost to exactly 1,000,000,000 currency across backend and Shop UI.
+**Goal:** Add AI bot PvE fights, expand the Shop with more purchasable items, and introduce an Announcements page with admin-created posts.
 
 **Planned changes:**
-- Update Admin Panel purchase price to 1,000,000,000 in backend purchase enforcement and in the Shop UI display/affordability messaging so they match.
-- Add backend persisted event model and canister methods to allow authenticated users with `hasAdminPanel = true` to create an event and list their own events.
-- Add an “Events” tab to the Admin Panel page (visible/accessible only to Admin Panel owners) with an English UI form (title + description) to create events and a list showing created events.
-- Extend the React Query hooks layer to support listing and creating events, including toast success/error behavior and cache invalidation to refresh the events list after creation.
+- Backend: add APIs to list AI bots and start/execute bot fights using the existing combat flow, awarding and persisting currency/EXP rewards on victory.
+- Frontend: add a Combat Arena section/tab to browse bots and start bot fights, reusing existing combat UI and React Query + toast patterns (including profile cache invalidation).
+- Backend: define shop item catalog data and a purchase API that validates currency/profile, subtracts currency, grants item effects, and persists the result.
+- Frontend: expand the Shop page to list new items alongside the existing Admin Panel card (unchanged), with affordability state, purchase actions, and profile refresh/toasts.
+- Frontend: add an Announcements page in main authenticated navigation that renders a scrollable list of announcement cards (English text).
+- Backend + Frontend: persist announcements, expose list and admin-only create endpoints, and add admin-only UI (via Admin Panel section/tab) to create announcements with cache invalidation.
+- Frontend: update any local Page type unions/navigation helpers to include the new Announcements page and avoid TypeScript errors.
 
-**User-visible outcome:** Players who own the Admin Panel can open a new “Events” tab to create events (title/description) and see their created events persistently; the Admin Panel costs 1,000,000,000 currency everywhere it is shown and enforced.
+**User-visible outcome:** Players can fight AI bots for rewards, buy additional shop items with in-game currency, and read announcements; Admin Panel owners can create announcements that appear in the Announcements page.

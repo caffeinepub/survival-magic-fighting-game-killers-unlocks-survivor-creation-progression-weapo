@@ -1,5 +1,6 @@
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
+import Text "mo:core/Text";
 import Principal "mo:core/Principal";
 
 module {
@@ -134,6 +135,7 @@ module {
   };
 
   type UserProfile = PlayerProfile;
+
   type Clan = {
     id : Nat;
     name : Text;
@@ -184,15 +186,60 @@ module {
   };
 
   type OldActor = {
+    adminPanelEvents : Map.Map<Principal, Map.Map<Nat, AdminPanelEvent>>;
     playerProfiles : Map.Map<Principal, PlayerProfile>;
     combatStatus : Map.Map<Principal, CombatStatus>;
     whyDontYouJoins : Map.Map<Nat, WhyDontYouJoin>;
     clans : Map.Map<Nat, Clan>;
     dungeons : Map.Map<Nat, Dungeon>;
     followers : Map.Map<Principal, Map.Map<Principal, ()>>;
-    currencyConversionRate : Nat;
-    adminPanelCost : Nat;
-    adminPanelConstant : Nat;
+  };
+
+  type ShopItem = {
+    id : Nat;
+    name : Text;
+    description : Text;
+    price : Nat;
+    itemType : ItemType;
+    bonusStat : ?Stat;
+  };
+
+  type ItemType = {
+    #weapon;
+    #armor;
+    #pet;
+    #key;
+    #currencyPack;
+    #misc;
+  };
+
+  type Stat = {
+    #attack : Nat;
+    #defense : Nat;
+    #speed : Nat;
+    #magic : Nat;
+    #health : Nat;
+    #experience : Nat;
+    #level : Nat;
+  };
+
+  type Bot = {
+    id : Nat;
+    name : Text;
+    url : Text;
+    description : Text;
+    difficulty : Nat;
+    rewardCurrency : Nat;
+    rewardExp : Nat;
+  };
+
+  type BotCombatStatus = {
+    botId : Nat;
+    botName : Text;
+    botHealth : Nat;
+    playerHealth : Nat;
+    playerActiveSurvivor : Survivor;
+    combatOngoing : Bool;
   };
 
   type NewActor = {
@@ -203,15 +250,74 @@ module {
     clans : Map.Map<Nat, Clan>;
     dungeons : Map.Map<Nat, Dungeon>;
     followers : Map.Map<Principal, Map.Map<Principal, ()>>;
-    currencyConversionRate : Nat;
-    adminPanelCost : Nat;
-    adminPanelConstant : Nat;
+    bots : Map.Map<Nat, Bot>;
+    botCombatStatus : Map.Map<Principal, BotCombatStatus>;
+    announcements : Map.Map<Nat, Announcement>;
+    shopItems : Map.Map<Nat, ShopItem>;
   };
 
+  public type Announcement = {
+    id : Nat;
+    title : Text;
+    message : Text;
+    createdBy : Principal;
+    timestamp : Nat;
+  };
+
+  // Migration function replacing old actor by new actor
   public func run(old : OldActor) : NewActor {
+    // Initialize the bots map with sample bots
+    let bots = Map.empty<Nat, Bot>();
+
+    bots.add(
+      1,
+      {
+        id = 1;
+        name = "The Shyamnator";
+        url = "https://shyamcore.app/images/shyamnator.png";
+        description = "A speedy, legendary cyborg that spins 62,000 times per second. Ranked #1 in physics simulation races and speed in the Shyamcore Multiverse.";
+        difficulty = 10;
+        rewardCurrency = 250_000_000;
+        rewardExp = 100_000;
+      },
+    );
+
+    bots.add(
+      2,
+      {
+        id = 2;
+        name = "The WesleyCore";
+        url = "https://shyamcore.app/images/wesleycore.png";
+        description = "Developed by Wesley Hardcore, this bot is known for its immense strength and stamina. Built for endurance races and is exceptionally strong.";
+        difficulty = 12;
+        rewardCurrency = 350_000_000;
+        rewardExp = 150_000;
+      },
+    );
+
+    bots.add(
+      3,
+      {
+        id = 3;
+        name = "AdminDestroyer";
+        url = "https://shyamcore.app/images/admindestroyer.png";
+        description = "A cold, calculating cyborg created to protect administrators. Developed using AI technology based on the Mountain Admin Core Foundation.";
+        difficulty = 20;
+        rewardCurrency = 1_000_000_000;
+        rewardExp = 1_000_000;
+      },
+    );
+
+    let announcements = Map.empty<Nat, Announcement>();
+    let shopItems = Map.empty<Nat, ShopItem>();
+    let botCombatStatus = Map.empty<Principal, BotCombatStatus>();
+
     {
       old with
-      adminPanelEvents = Map.empty();
+      bots;
+      botCombatStatus;
+      announcements;
+      shopItems;
     };
   };
 };

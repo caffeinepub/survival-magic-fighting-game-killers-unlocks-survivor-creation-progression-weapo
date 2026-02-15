@@ -1,93 +1,117 @@
 {
   "kind": "build_request",
-  "title": "Add Admin Panel Events tab and update Admin Panel purchase cost to 1,000,000,000",
+  "title": "Add AI bot fights, expand Shop with more purchasable items, and add an Announcements page",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-38",
-      "text": "Set the Admin Panel purchase cost to exactly 1,000,000,000 in-game currency in both the backend purchase logic and the Shop UI so the displayed price, affordability checks, and actual purchase enforcement all match.",
+      "id": "REQ-42",
+      "text": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-10"
         ],
         "quotes": [
-          "Create event tab where players who have admin panel have the feature create events on there admin panel and set admin panel cost to 1000000000 currency"
+          "Add ai bots"
         ]
       },
       "acceptanceCriteria": [
-        "In `backend/main.mo`, the Admin Panel cost used by `purchaseAdminPanel()` is 1_000_000_000 (not 10_000).",
-        "In `frontend/src/pages/ShopPage.tsx`, the Admin Panel price display, affordability logic, and “need X more currency” message all use 1_000_000_000.",
-        "Attempting to purchase the Admin Panel with currency < 1_000_000_000 fails with a clear error; purchasing with currency >= 1_000_000_000 succeeds and sets `hasAdminPanel = true`."
+        "Backend exposes a query to list AI bots (id, name, and combat stats/rewards) for the frontend to display.",
+        "Backend exposes a method to start a bot fight and returns the same kind of combat details used by the current combat UI (so existing battle rendering can be reused).",
+        "Bot fights use the same eligibility requirements as existing combat (authenticated user with an active survivor).",
+        "Winning a bot fight grants currency/EXP rewards to the caller and persists them in the caller’s profile.",
+        "Frontend adds a new section/tab in the Combat Arena UI to browse AI bots and start a bot fight.",
+        "Frontend uses React Query hooks and the existing toast success/error pattern for bot listing and bot fight actions, and invalidates/refetches currentUserProfile after fights that change rewards."
       ]
     },
     {
-      "id": "REQ-39",
-      "text": "Implement an Admin Panel \"Events\" tab inside `frontend/src/pages/AdminPanelPage.tsx` that is only accessible to users who have purchased/unlocked the Admin Panel, and allow those users to create events from that tab using English user-facing text.",
+      "id": "REQ-43",
+      "text": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "add more shop features"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend provides a query to list shop items (stable ids, English name/description, price, and a clear item type/effect).",
+        "Backend provides a purchase method that validates the caller has a profile and sufficient currency, subtracts currency, and grants the item effect to the caller (e.g., adds to inventory/collectedKeys/weapons/pets as appropriate).",
+        "Shop purchases are persisted in the caller’s profile and are reflected on next profile fetch.",
+        "Frontend Shop page shows the Admin Panel card unchanged (still costs 1,000,000,000) and additionally renders the new shop items with price, affordability state, and a purchase button.",
+        "On successful purchase, the UI shows a success toast and refreshes the cached currentUserProfile; on failure, it shows the backend error via the existing toast pattern."
+      ]
+    },
+    {
+      "id": "REQ-44",
+      "text": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-10"
         ],
         "quotes": [
-          "Create event tab where players who have admin panel have the feature create events on there admin panel"
+          "add announcement page"
         ]
       },
       "acceptanceCriteria": [
-        "The Admin Panel Tabs include a new tab labeled \"Events\".",
-        "The Events tab provides a form to create an event (at minimum: event title and event description) and a submit button.",
-        "After successful creation, the form clears and the UI shows the newly created event in a list on the same tab.",
-        "All Events tab UI text is in English and follows existing styling and layout conventions used in AdminPanelPage (Cards, Labels, Inputs, Buttons, Tabs)."
+        "A new page component (e.g., `AnnouncementsPage.tsx`) exists and renders a scrollable list of announcement entries using the existing UI card components styling pattern.",
+        "The app-level page union/routing state in `frontend/src/App.tsx` is extended to include the new announcements page id and renders the new page when selected.",
+        "`frontend/src/components/GameLayout.tsx` navigation includes a new \"Announcements\" item that navigates to the announcements page for authenticated users.",
+        "Any user-facing text on the Announcements page is in English."
       ]
     },
     {
-      "id": "REQ-40",
-      "text": "Add backend support for Admin Panel Events: define a persisted event model and provide canister methods that allow an authenticated caller who has `hasAdminPanel = true` to create an event and list their created events; callers without the Admin Panel must be rejected with a clear error.",
-      "target": "backend",
+      "id": "REQ-45",
+      "text": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-10"
         ],
         "quotes": [
-          "Create event tab where players who have admin panel have the feature create events on there admin panel"
+          "add announcement page"
         ]
       },
       "acceptanceCriteria": [
-        "`backend/main.mo` defines an Event type with fields sufficient to render an events list (at minimum: id, title, description, createdAt).",
-        "A shared method exists to create an event for the caller and persists it so it remains after refresh/reload.",
-        "A query method exists to list the caller’s events.",
-        "If the caller is not authorized as a user, backend traps with an authorization error consistent with existing patterns.",
-        "If the caller does not have `hasAdminPanel = true`, backend traps with a clear error message indicating the Admin Panel is required."
+        "Backend defines an Announcement model (id, title, body, timestamp) and stores announcements persistently.",
+        "Backend exposes a public query method to list announcements for authenticated users.",
+        "Backend exposes a create announcement method restricted to callers who have `hasAdminPanel = true`, rejecting others with a clear error message.",
+        "Frontend adds React Query hooks in `frontend/src/hooks/useQueries.ts` to list announcements and create an announcement using the existing toast success/error pattern and appropriate cache invalidation.",
+        "Frontend adds an Announcements creation UI for Admin Panel owners (either as a new Admin Panel tab or a clearly marked admin-only section) that submits title/body and then refreshes the announcements list."
       ]
     },
     {
-      "id": "REQ-41",
-      "text": "Extend the React Query data layer in `frontend/src/hooks/useQueries.ts` with hooks to call the new backend events methods (list events, create event), using the existing toast success/error pattern and appropriate cache invalidation so the Events tab stays in sync.",
+      "id": "REQ-46",
+      "text": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-10"
         ],
         "quotes": [
-          "Create event tab where players who have admin panel have the feature create events on there admin panel"
+          "Add ai bots and add more shop features and add announcement page."
         ]
       },
       "acceptanceCriteria": [
-        "A `useGetMyEvents` (or equivalent) query hook fetches the caller’s events and is used by the Events tab UI.",
-        "A `useCreateEvent` (or equivalent) mutation hook creates an event and, on success, shows a success toast and refreshes the events list (via invalidation/refetch).",
-        "On backend errors, the hooks show an error toast with the error message (matching the existing pattern used by other hooks in `useQueries.ts`)."
+        "The frontend TypeScript build succeeds with no Page-union type errors after adding the new Announcements page and any new combat/shop navigation.",
+        "Home page navigation callbacks remain functional and type-safe after the page set expands."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
-    "Only create `backend/migration.mo` if a backward-incompatible state/schema change is required; prefer adding new state in a way that does not break existing profiles.",
-    "Do not edit frontend files under `frontend/src/components/ui` or any other immutable paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single-actor Motoko canister; keep all Motoko logic in `backend/main.mo`.",
+    "Only add/update `backend/migration.mo` if the upgrade requires migrating existing stable state (conditional migration policy).",
+    "Do not edit frontend files under `frontend/src/components/ui` or other `frontend.immutablePaths`; compose existing UI components instead.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Do not create a public, global in-game events feed visible to all players (only event creation and viewing for the creator is required).",
-    "Do not implement real-time event updates or notifications.",
-    "Do not add third-party integrations for scheduling, calendars, or messaging."
+    "Implementing real-time multiplayer AI behavior (no WebSockets/real-time systems).",
+    "Third-party services or external databases for bots, shop, or announcements.",
+    "Replacing or removing the existing Updates page/tab (Announcements is a separate page).",
+    "Adding player search functionality (not requested in the latest message)."
   ],
   "imageRequirements": {
     "required": [],

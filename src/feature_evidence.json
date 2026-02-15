@@ -2,8 +2,28 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-set-the-admin-panel-purchase-cost-to-exactly-1-000-000-000-in-game-currency-in-both-the-backend-purchase-logic-and-the-shop-ui-so-the-displayed-price-affordability-checks-and-actual-purchase-enforcement-all-match",
-      "featureTitle": "Set the Admin Panel purchase cost to exactly 1,000,000,000 in-game currency in both the backend purchase logic and the Shop UI so the displayed price, affordability checks, and actual purchase enforcement all match.",
+      "featureId": "feature-implement-ai-bot-opponents-as-a-new-pve-combat-option-including-backend-apis-to-list-available-bots-and-start-fight-a-bot-using-the-existing-combat-flow-start-combat-attacks-and-reward-the-caller-on-victory",
+      "featureTitle": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/GameplayPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-42"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-expand-the-shop-with-additional-purchasable-items-beyond-the-admin-panel-including-backend-definitions-for-shop-items-a-purchase-api-and-updated-shop-ui-to-browse-and-buy-these-items-using-in-game-currency",
+      "featureTitle": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
       "files": [
         "frontend/src/hooks/useQueries.ts",
         "frontend/src/pages/ShopPage.tsx"
@@ -17,15 +37,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-38"
+        "REQ-43"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-an-admin-panel-events-tab-inside-frontend-src-pages-adminpanelpage-tsx-that-is-only-accessible-to-users-who-have-purchased-unlocked-the-admin-panel-and-allow-those-users-to-create-events-from-that-tab-using-english-user-facing-text",
-      "featureTitle": "Implement an Admin Panel \"Events\" tab inside `frontend/src/pages/AdminPanelPage.tsx` that is only accessible to users who have purchased/unlocked the Admin Panel, and allow those users to create events from that tab using English user-facing text.",
+      "featureId": "feature-add-an-announcements-page-tab-reachable-from-the-main-in-app-navigation-for-authenticated-users-and-render-a-list-of-announcements-with-english-titles-dates-and-body-text",
+      "featureTitle": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
       "files": [
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/GameLayout.tsx",
+        "frontend/src/pages/AnnouncementsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -36,15 +58,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-39"
+        "REQ-44"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-extend-the-react-query-data-layer-in-frontend-src-hooks-usequeries-ts-with-hooks-to-call-the-new-backend-events-methods-list-events-create-event-using-the-existing-toast-success-error-pattern-and-appropriate-cache-invalidation-so-the-events-tab-stays-in-sync",
-      "featureTitle": "Extend the React Query data layer in `frontend/src/hooks/useQueries.ts` with hooks to call the new backend events methods (list events, create event), using the existing toast success/error pattern and appropriate cache invalidation so the Events tab stays in sync.",
+      "featureId": "feature-persist-and-serve-announcements-from-the-backend-and-allow-admin-panel-owners-to-create-announcements-to-populate-the-announcements-page-using-english-user-facing-copy",
+      "featureTitle": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/AnnouncementsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -55,7 +78,28 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-41"
+        "REQ-45"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-any-local-frontend-page-type-unions-used-by-navigation-helpers-e-g-the-page-type-in-frontend-src-pages-homepage-tsx-so-they-remain-compatible-with-the-app-s-expanded-navigation-pages-and-do-not-cause-typescript-type-errors",
+      "featureTitle": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/GameLayout.tsx",
+        "frontend/src/pages/HomePage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-46"
       ],
       "confidence": "high"
     }

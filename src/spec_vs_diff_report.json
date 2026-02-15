@@ -1,62 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T19:02:38.422Z",
-  "summary": "Diff implements Admin Panel cost constant updates in backend and Shop UI, and adds an Admin Panel “Events” tab with form state and hooks wiring. Backend shows new adminPanelEvents state and a migration module, but the diff summary does not provide enough evidence that required backend event canister methods (create/list with authorization checks) exist, nor that the event type matches the required minimum fields (id/title/description/createdAt).",
+  "generatedAt": "2026-02-15T19:29:36.529Z",
+  "summary": "Diff adds a new Announcements page and wires it into App/GameLayout navigation; adds bot-combat UI/hooks in GameplayPage; expands ShopPage UI to render additional shop items; and introduces a backend migration module plus backend state placeholders for bots. However, several backend-side APIs and persistence details required by REQ-42/43/45 are not clearly evidenced in the truncated backend diff summary.",
   "missing_requirements": [
     {
-      "id": "REQ-38",
-      "requirement": "Attempting to purchase the Admin Panel with currency < 1_000_000_000 fails with a clear error; purchasing with currency >= 1_000_000_000 succeeds and sets hasAdminPanel = true.",
-      "reason": "Backend purchase enforcement and error messaging for insufficient currency are not shown in the truncated backend/main.mo diff; only the cost constant is visible. Frontend purchase handler portion in ShopPage is truncated as well, so end-to-end enforcement cannot be verified from the provided summary.",
+      "id": "REQ-42",
+      "requirement": "Backend exposes APIs to list available AI bots (id, name, combat stats/rewards) and to start/fight a bot using the existing combat flow, with eligibility checks and victory rewards persisted to the caller profile.",
+      "reason": "Frontend references hooks for bot listing/combat, and backend/main.mo shows bot-related maps, but the diff summary does not show the actual public canister methods (query for bots, start bot combat, attack flow) nor the reward persistence logic/eligibility enforcement in backend/main.mo due to truncation.",
       "evidence": [
-        "backend/main.mo (truncated; only shows `let adminPanelCost : Nat = 1_000_000_000;`)",
-        "frontend/src/pages/ShopPage.tsx (truncated; purchase button handler not fully shown)"
+        "backend/main.mo",
+        "frontend/src/pages/GameplayPage.tsx",
+        "frontend/src/hooks/useQueries.ts"
       ]
     },
     {
-      "id": "REQ-40",
-      "requirement": "backend/main.mo defines an Event type with at minimum: id, title, description, createdAt.",
-      "reason": "The diff shows an AdminPanelEvent type in migration.mo with fields `id`, `creator`, `eventName`, `description`, `timestamp`, but does not show a backend/main.mo Event type with the required minimum field names (title/createdAt) or an equivalent type definition in main.mo.",
+      "id": "REQ-43",
+      "requirement": "Backend provides a query to list shop items (stable ids, English name/description, price, type/effect) and a purchase method that validates profile and sufficient currency, subtracts currency, grants effect, and persists it.",
+      "reason": "Shop UI and hooks were added/updated to fetch and purchase shop items, and migration.mo defines a ShopItem type, but the diff summary does not show the backend public query/method implementations or the logic that applies item effects and persists profile changes.",
       "evidence": [
-        "backend/migration.mo (shows `type AdminPanelEvent = { id; creator; eventName; description; timestamp }`)",
-        "backend/main.mo (truncated; shows `adminPanelEvents` map but no visible Event type definition)"
+        "frontend/src/pages/ShopPage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-40",
-      "requirement": "Provide canister methods: shared create-event (persisted) and query list-events for the authenticated caller; reject callers without hasAdminPanel=true with a clear error; unauthorized callers trap with existing-pattern auth error.",
-      "reason": "The diff summary does not include any visible canister method implementations for creating or listing events, nor the required authorization/trap behavior. Only state initialization (`adminPanelEvents`) is visible in main.mo.",
+      "id": "REQ-45",
+      "requirement": "Persist and serve announcements from the backend, with an Announcement model stored persistently; provide a list announcements query for authenticated users; provide a create announcement method restricted to hasAdminPanel=true with clear error for others.",
+      "reason": "Frontend AnnouncementsPage and routing were added, but the diff summary does not show any backend Announcement type, stable storage, or the restricted create/list public methods in backend/main.mo (not visible in the truncated excerpt).",
       "evidence": [
-        "backend/main.mo (truncated; shows `let adminPanelEvents = ...` but no create/list methods or auth checks in provided snippet)"
-      ]
-    },
-    {
-      "id": "REQ-41",
-      "requirement": "Extend frontend React Query data layer with list/create event hooks using existing toast success/error pattern and cache invalidation/refetch so Events tab stays in sync.",
-      "reason": "AdminPanelPage imports and uses `useGetMyAdminPanelEvents` and `useCreateAdminPanelEvent`, but the provided truncated portion of useQueries.ts does not show these hook implementations, their toast usage, or cache invalidation keys. Therefore AC-level behavior cannot be verified from the diff summary alone.",
-      "evidence": [
-        "frontend/src/pages/AdminPanelPage.tsx (imports `useGetMyAdminPanelEvents`, `useCreateAdminPanelEvent`)",
-        "frontend/src/hooks/useQueries.ts (truncated; hooks not visible in provided excerpt)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Added a large backend migration module defining many unrelated game types (killers/survivors/weapons/pets/enemies/dungeons/clans/etc.) beyond the Admin Panel Events feature scope.",
-      "reason": "BuildRequest only mentions creating `backend/migration.mo` if needed for backward-incompatible schema change related to the requested features; the diff shows an expansive migration schema not clearly limited to adding Admin Panel Events.",
-      "evidence": [
+        "frontend/src/pages/AnnouncementsPage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "backend/main.mo",
         "backend/migration.mo"
       ]
     }
   ],
-  "confidence": 0.58,
+  "hallucinated_features": [],
+  "confidence": 0.56,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/GameLayout.tsx",
     "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/AnnouncementsPage.tsx",
+    "frontend/src/pages/GameplayPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "frontend/src/pages/ShopPage.tsx",
+    "frontend/src/pages/SocialPage.tsx",
     "project_state.json"
   ]
 }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, Survivor, Weapon, Pet, AdminPanelEvent } from '../backend';
+import type { UserProfile, Survivor, Weapon, Pet, AdminPanelEvent, Bot, BotCombatStatus, Announcement, ShopItem } from '../backend';
 import { toast } from 'sonner';
 import { Principal } from '@dfinity/principal';
 
@@ -502,6 +502,7 @@ export function useStartQuest() {
       return actor.startQuest(questId);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
       toast.success('Quest started!');
     },
     onError: (error: Error) => {
@@ -522,7 +523,7 @@ export function useCompleteQuest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      toast.success('Quest completed! Rewards earned.');
+      toast.success('Quest completed! Reward claimed.');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to complete quest');
@@ -542,7 +543,7 @@ export function useUnlockCrate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      toast.success('Crate unlocked! Treasure claimed.');
+      toast.success('Crate unlocked! Reward claimed.');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to unlock crate');
@@ -550,18 +551,51 @@ export function useUnlockCrate() {
   });
 }
 
-// Social hooks
+// Admin Panel Events
+export function useCreateAdminPanelEvent() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ eventName, description, timestamp }: { eventName: string; description: string; timestamp: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createAdminPanelEvent(eventName, description, timestamp);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPanelEvents'] });
+      toast.success('Event created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create event');
+    },
+  });
+}
+
+export function useGetAdminPanelEvents() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<AdminPanelEvent[]>({
+    queryKey: ['adminPanelEvents'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAdminPanelEventsForCaller();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+// Social features
 export function useFollowUser() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (target: Principal) => {
+    mutationFn: async (targetPrincipal: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.followUser(target);
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.followUser(principal);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
       toast.success('User followed successfully!');
@@ -577,12 +611,12 @@ export function useUnfollowUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (target: Principal) => {
+    mutationFn: async (targetPrincipal: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.unfollowUser(target);
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.unfollowUser(principal);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['followers'] });
       queryClient.invalidateQueries({ queryKey: ['following'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
       toast.success('User unfollowed successfully!');
@@ -590,19 +624,6 @@ export function useUnfollowUser() {
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to unfollow user');
     },
-  });
-}
-
-export function useGetFollowers() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<Principal[]>({
-    queryKey: ['followers'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getWhoIsFollowingCaller();
-    },
-    enabled: !!actor && !actorFetching,
   });
 }
 
@@ -614,6 +635,19 @@ export function useGetFollowing() {
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getWhoCallerFollowing();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetFollowers() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Principal[]>({
+    queryKey: ['followers'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getWhoIsFollowingCaller();
     },
     enabled: !!actor && !actorFetching,
   });
@@ -632,43 +666,141 @@ export function useGetFriends() {
   });
 }
 
-// Admin Panel Events hooks
-export function useGetMyAdminPanelEvents() {
+// Bot Combat hooks
+export function useGetAllBots() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<AdminPanelEvent[]>({
-    queryKey: ['myAdminPanelEvents'],
+  return useQuery<Bot[]>({
+    queryKey: ['bots'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getAdminPanelEventsForCaller();
+      return actor.getAllBots();
     },
     enabled: !!actor && !actorFetching,
   });
 }
 
-export function useCreateAdminPanelEvent() {
+export function useStartBotCombat() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      eventName,
-      description,
-      timestamp,
-    }: {
-      eventName: string;
-      description: string;
-      timestamp: bigint;
-    }) => {
+    mutationFn: async (botId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createAdminPanelEvent(eventName, description, timestamp);
+      return actor.startBotCombat(botId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myAdminPanelEvents'] });
-      toast.success('Event created successfully!');
+      queryClient.invalidateQueries({ queryKey: ['botCombatStatus'] });
+      toast.success('Bot combat started!');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create event');
+      toast.error(error.message || 'Failed to start bot combat');
+    },
+  });
+}
+
+export function useAttackBot() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.attackBot();
+    },
+    onSuccess: (data: BotCombatStatus) => {
+      queryClient.invalidateQueries({ queryKey: ['botCombatStatus'] });
+      if (!data.combatOngoing) {
+        queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+        if (data.botHealth === 0n) {
+          toast.success('Victory! Bot defeated!');
+        } else {
+          toast.error('Defeated! Better luck next time.');
+        }
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Attack failed');
+    },
+  });
+}
+
+export function useGetBotCombatStatus() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<BotCombatStatus | null>({
+    queryKey: ['botCombatStatus'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getBotCombatStatus();
+    },
+    enabled: !!actor && !actorFetching,
+    refetchInterval: 1000,
+  });
+}
+
+// Announcements hooks
+export function useGetAllAnnouncements() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Announcement[]>({
+    queryKey: ['announcements'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAllAnnouncements();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useCreateAnnouncement() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ title, message }: { title: string; message: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createAnnouncement(title, message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+      toast.success('Announcement created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create announcement');
+    },
+  });
+}
+
+// Shop Items hooks
+export function useGetAllShopItems() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<ShopItem[]>({
+    queryKey: ['shopItems'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAllShopItems();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function usePurchaseShopItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (itemId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.purchaseShopItem(itemId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      toast.success('Item purchased successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to purchase item');
     },
   });
 }

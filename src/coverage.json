@@ -1,63 +1,82 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T19:02:38.426Z",
+  "generatedAt": "2026-02-15T19:29:36.533Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
-        "id": "REQ-38",
-        "summary": "Set the Admin Panel purchase cost to exactly 1,000,000,000 in-game currency in both the backend purchase logic and the Shop UI so the displayed price, affordability checks, and actual purchase enforcement all match.",
+        "id": "REQ-42",
+        "summary": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ShopPage.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/GameplayPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ShopPage.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/GameplayPage.tsx"
         ]
       },
       {
-        "id": "REQ-39",
-        "summary": "Implement an Admin Panel \"Events\" tab inside `frontend/src/pages/AdminPanelPage.tsx` that is only accessible to users who have purchased/unlocked the Admin Panel, and allow those users to create events from that tab using English user-facing text.",
+        "id": "REQ-43",
+        "summary": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ShopPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ShopPage.tsx"
         ]
       },
       {
-        "id": "REQ-40",
-        "summary": "Add backend support for Admin Panel Events: define a persisted event model and provide canister methods that allow an authenticated caller who has `hasAdminPanel = true` to create an event and list their created events; callers without the Admin Panel must be rejected with a clear error.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "id": "REQ-44",
+        "summary": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AnnouncementsPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/GameLayout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AnnouncementsPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/GameLayout.tsx"
+        ]
       },
       {
-        "id": "REQ-41",
-        "summary": "Extend the React Query data layer in `frontend/src/hooks/useQueries.ts` with hooks to call the new backend events methods (list events, create event), using the existing toast success/error pattern and appropriate cache invalidation so the Events tab stays in sync.",
+        "id": "REQ-45",
+        "summary": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/AnnouncementsPage.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/AnnouncementsPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-46",
+        "summary": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/components/GameLayout.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/components/GameLayout.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
@@ -69,13 +88,19 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/GameLayout.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/AnnouncementsPage.tsx",
+    "frontend/src/pages/GameplayPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "frontend/src/pages/ShopPage.tsx",
+    "frontend/src/pages/SocialPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

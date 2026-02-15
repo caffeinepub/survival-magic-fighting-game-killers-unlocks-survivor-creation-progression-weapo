@@ -17,6 +17,36 @@ export interface AdminPanelEvent {
   'timestamp' : bigint,
   'eventName' : string,
 }
+export interface Announcement {
+  'id' : bigint,
+  'title' : string,
+  'createdBy' : Principal,
+  'message' : string,
+  'timestamp' : bigint,
+}
+export interface Bot {
+  'id' : bigint,
+  'url' : string,
+  'rewardCurrency' : bigint,
+  'difficulty' : bigint,
+  'name' : string,
+  'description' : string,
+  'rewardExp' : bigint,
+}
+export interface BotCombatStatus {
+  'combatOngoing' : boolean,
+  'botName' : string,
+  'botHealth' : bigint,
+  'botId' : bigint,
+  'playerHealth' : bigint,
+  'playerActiveSurvivor' : Survivor,
+}
+export type ItemType = { 'key' : null } |
+  { 'pet' : null } |
+  { 'armor' : null } |
+  { 'misc' : null } |
+  { 'currencyPack' : null } |
+  { 'weapon' : null };
 export interface Killer {
   'id' : bigint,
   'url' : string,
@@ -41,6 +71,21 @@ export interface Pet {
   'description' : string,
   'levelBonus' : bigint,
 }
+export interface ShopItem {
+  'id' : bigint,
+  'name' : string,
+  'description' : string,
+  'bonusStat' : [] | [Stat],
+  'itemType' : ItemType,
+  'price' : bigint,
+}
+export type Stat = { 'magic' : bigint } |
+  { 'level' : bigint } |
+  { 'experience' : bigint } |
+  { 'speed' : bigint } |
+  { 'defense' : bigint } |
+  { 'attack' : bigint } |
+  { 'health' : bigint };
 export interface Survivor {
   'name' : string,
   'level' : bigint,
@@ -86,16 +131,25 @@ export interface Weapon {
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'attackBot' : ActorMethod<[], BotCombatStatus>,
   'createAdminPanelEvent' : ActorMethod<[string, string, bigint], undefined>,
+  'createAnnouncement' : ActorMethod<[string, string], undefined>,
   'followUser' : ActorMethod<[Principal], undefined>,
   'getAdminPanelEventsForCaller' : ActorMethod<[], Array<AdminPanelEvent>>,
   'getAdminPanelEventsForUser' : ActorMethod<
     [Principal],
     Array<AdminPanelEvent>
   >,
+  'getAllAnnouncements' : ActorMethod<[], Array<Announcement>>,
+  'getAllBots' : ActorMethod<[], Array<Bot>>,
+  'getAllShopItems' : ActorMethod<[], Array<ShopItem>>,
+  'getAnnouncement' : ActorMethod<[bigint], [] | [Announcement]>,
+  'getBot' : ActorMethod<[bigint], [] | [Bot]>,
+  'getBotCombatStatus' : ActorMethod<[], [] | [BotCombatStatus]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCallersFriends' : ActorMethod<[], Array<Principal>>,
+  'getShopItem' : ActorMethod<[bigint], [] | [ShopItem]>,
   'getUserAdminPanelEvent' : ActorMethod<
     [Principal, bigint],
     [] | [AdminPanelEvent]
@@ -108,7 +162,9 @@ export interface _SERVICE {
   'getWhoUserIsFollowing' : ActorMethod<[Principal], Array<Principal>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'purchaseAdminPanel' : ActorMethod<[], undefined>,
+  'purchaseShopItem' : ActorMethod<[bigint], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'startBotCombat' : ActorMethod<[bigint], BotCombatStatus>,
   'unfollowUser' : ActorMethod<[Principal], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

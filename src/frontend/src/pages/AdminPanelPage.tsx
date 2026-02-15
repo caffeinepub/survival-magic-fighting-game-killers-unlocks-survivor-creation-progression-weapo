@@ -6,7 +6,7 @@ import {
   useAdminSetLevel,
   useAddWeapon,
   useAddPet,
-  useGetMyAdminPanelEvents,
+  useGetAdminPanelEvents,
   useCreateAdminPanelEvent,
 } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +27,7 @@ export function AdminPanelPage() {
   const setLevel = useAdminSetLevel();
   const addWeapon = useAddWeapon();
   const addPet = useAddPet();
-  const { data: events, isLoading: eventsLoading } = useGetMyAdminPanelEvents();
+  const { data: events, isLoading: eventsLoading } = useGetAdminPanelEvents();
   const createEvent = useCreateAdminPanelEvent();
 
   const [currencyAmount, setCurrencyAmount] = useState('1000');

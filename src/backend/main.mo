@@ -1,9 +1,14 @@
 import Array "mo:core/Array";
+import Bool "mo:core/Bool";
+import List "mo:core/List";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
+import Int "mo:core/Int";
 import Text "mo:core/Text";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Timer "mo:core/Timer";
+import Time "mo:core/Time";
 import Iter "mo:core/Iter";
 import Migration "migration";
 
@@ -179,6 +184,10 @@ actor {
 
   // Friends/Followers System
   let followers = Map.empty<Principal, Map.Map<Principal, ()>>();
+  let bots = Map.empty<Nat, Bot>();
+  let botCombatStatus = Map.empty<Principal, BotCombatStatus>();
+  let announcements = Map.empty<Nat, Announcement>();
+  let shopItems = Map.empty<Nat, ShopItem>();
 
   let currencyConversionRate = 639_273_000_000_012;
   let adminPanelCost : Nat = 1_000_000_000;
@@ -207,8 +216,267 @@ actor {
     timestamp : Nat;
   };
 
+  public type ShopItem = {
+    id : Nat;
+    name : Text;
+    description : Text;
+    price : Nat;
+    itemType : ItemType;
+    bonusStat : ?Stat;
+  };
+
+  public type ItemType = {
+    #weapon;
+    #armor;
+    #pet;
+    #key;
+    #currencyPack;
+    #misc;
+  };
+
+  public type Stat = {
+    #attack : Nat;
+    #defense : Nat;
+    #speed : Nat;
+    #magic : Nat;
+    #health : Nat;
+    #experience : Nat;
+    #level : Nat;
+  };
+
+  public type Bot = {
+    id : Nat;
+    name : Text;
+    url : Text;
+    description : Text;
+    difficulty : Nat;
+    rewardCurrency : Nat;
+    rewardExp : Nat;
+  };
+
+  public type BotCombatStatus = {
+    botId : Nat;
+    botName : Text;
+    botHealth : Nat;
+    playerHealth : Nat;
+    playerActiveSurvivor : Survivor;
+    combatOngoing : Bool;
+  };
+
+  public type Announcement = {
+    id : Nat;
+    title : Text;
+    message : Text;
+    createdBy : Principal;
+    timestamp : Nat;
+  };
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  func nextAnnouncementId() : Nat {
+    let nextId = announcements.size() + 1;
+    if (announcements.containsKey(nextId)) {
+      return nextId + 1;
+    };
+    nextId;
+  };
+
+  func nextShopItemId() : Nat {
+    let nextId = shopItems.size() + 1;
+    if (shopItems.containsKey(nextId)) {
+      return nextId + 1;
+    };
+    nextId;
+  };
+
+  // Announcements - Admin can create, anyone (including guests) can view
+  public shared ({ caller }) func createAnnouncement(title : Text, message : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can create announcements");
+    };
+
+    let announcement : Announcement = {
+      id = nextAnnouncementId();
+      title;
+      message;
+      createdBy = caller;
+      timestamp = Int.abs(Time.now());
+    };
+    announcements.add(announcement.id, announcement);
+  };
+
+  // Guest accessible - no authorization check needed
+  public query func getAllAnnouncements() : async [Announcement] {
+    let iter = announcements.values();
+    iter.toArray();
+  };
+
+  // Guest accessible - no authorization check needed
+  public query func getAnnouncement(id : Nat) : async ?Announcement {
+    announcements.get(id);
+  };
+
+  // Shop Items - Guest accessible for browsing
+  public query func getAllShopItems() : async [ShopItem] {
+    let iter = shopItems.values();
+    iter.toArray();
+  };
+
+  public query func getShopItem(id : Nat) : async ?ShopItem {
+    shopItems.get(id);
+  };
+
+  // Purchase shop item - User only
+  public shared ({ caller }) func purchaseShopItem(itemId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can purchase items");
+    };
+
+    let item = switch (shopItems.get(itemId)) {
+      case (?i) { i };
+      case (null) {
+        Runtime.trap("Shop item not found");
+      };
+    };
+
+    switch (playerProfiles.get(caller)) {
+      case (?profile) {
+        if (profile.currency < item.price) {
+          Runtime.trap("Insufficient funds to purchase this item");
+        };
+
+        let updatedProfile = PlayerProfileExtensions.withCurrency(profile, profile.currency - item.price);
+        playerProfiles.add(caller, updatedProfile);
+      };
+      case (null) {
+        Runtime.trap("User profile not found");
+      };
+    };
+  };
+
+  // Bot Combat - Guest accessible for listing, user only for combat
+  public query func getAllBots() : async [Bot] {
+    let iter = bots.values();
+    iter.toArray();
+  };
+
+  public query func getBot(id : Nat) : async ?Bot {
+    bots.get(id);
+  };
+
+  // Start bot combat - User only
+  public shared ({ caller }) func startBotCombat(botId : Nat) : async BotCombatStatus {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can start bot combat");
+    };
+
+    let bot = switch (bots.get(botId)) {
+      case (?b) { b };
+      case (null) {
+        Runtime.trap("Bot not found");
+      };
+    };
+
+    let profile = switch (playerProfiles.get(caller)) {
+      case (?p) { p };
+      case (null) {
+        Runtime.trap("User profile not found");
+      };
+    };
+
+    let activeSurvivor = switch (profile.activeSurvivor) {
+      case (?s) { s };
+      case (null) {
+        Runtime.trap("No active survivor selected");
+      };
+    };
+
+    let status : BotCombatStatus = {
+      botId = bot.id;
+      botName = bot.name;
+      botHealth = bot.difficulty * 100;
+      playerHealth = activeSurvivor.stats.health;
+      playerActiveSurvivor = activeSurvivor;
+      combatOngoing = true;
+    };
+
+    botCombatStatus.add(caller, status);
+    status;
+  };
+
+  // Attack bot - User only
+  public shared ({ caller }) func attackBot() : async BotCombatStatus {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can attack bots");
+    };
+
+    let status = switch (botCombatStatus.get(caller)) {
+      case (?s) { s };
+      case (null) {
+        Runtime.trap("No active bot combat found");
+      };
+    };
+
+    if (not status.combatOngoing) {
+      Runtime.trap("Bot combat has already ended");
+    };
+
+    let bot = switch (bots.get(status.botId)) {
+      case (?b) { b };
+      case (null) {
+        Runtime.trap("Bot not found");
+      };
+    };
+
+    let playerDamage = status.playerActiveSurvivor.stats.attack;
+    let botDamage = bot.difficulty * 5;
+
+    let newBotHealth = if (status.botHealth > playerDamage) {
+      status.botHealth - playerDamage;
+    } else {
+      0;
+    };
+
+    let newPlayerHealth = if (status.playerHealth > botDamage) {
+      status.playerHealth - botDamage;
+    } else {
+      0;
+    };
+
+    let combatOngoing = newBotHealth > 0 and newPlayerHealth > 0;
+
+    let updatedStatus : BotCombatStatus = {
+      status with
+      botHealth = newBotHealth;
+      playerHealth = newPlayerHealth;
+      combatOngoing;
+    };
+
+    botCombatStatus.add(caller, updatedStatus);
+
+    // If player won, reward them
+    if (newBotHealth == 0 and newPlayerHealth > 0) {
+      switch (playerProfiles.get(caller)) {
+        case (?profile) {
+          let newCurrency = profile.currency + bot.rewardCurrency;
+          let updatedProfile = PlayerProfileExtensions.withCurrency(profile, newCurrency);
+          playerProfiles.add(caller, updatedProfile);
+        };
+        case (null) {};
+      };
+    };
+
+    updatedStatus;
+  };
+
+  // Get bot combat status - User only, ownership check
+  public query ({ caller }) func getBotCombatStatus() : async ?BotCombatStatus {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view combat status");
+    };
+    botCombatStatus.get(caller);
+  };
 
   func nextWhyDontYouJoinId() : Nat {
     whyDontYouJoins.size() + 1;
@@ -271,6 +539,10 @@ actor {
   };
 
   public query ({ caller }) func getAdminPanelEventsForCaller() : async [AdminPanelEvent] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view admin panel events");
+    };
+
     switch (playerProfiles.get(caller)) {
       case (?profile) {
         if (not profile.hasAdminPanel) {
@@ -399,6 +671,9 @@ actor {
   };
 
   public query ({ caller }) func getWhoCallerFollowing() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view following list");
+    };
     let iter = followers.entries();
     let following = iter.toArray().filter(
       func((followee, followersMap)) { followersMap.containsKey(caller) }
@@ -418,6 +693,9 @@ actor {
   };
 
   public query ({ caller }) func getWhoIsFollowingCaller() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view followers");
+    };
     switch (followers.get(caller)) {
       case (?followersMap) { followersMap.keys().toArray() };
       case (null) { [] };
@@ -435,6 +713,10 @@ actor {
   };
 
   public query ({ caller }) func getCallersFriends() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view friends");
+    };
+
     let userFollowers = switch (followers.get(caller)) {
       case (?followersMap) { followersMap };
       case (null) { return [] };
