@@ -1,0 +1,19 @@
+{
+  "frontend/src/App.tsx": "Main application component with routing logic, authentication gate, profile setup dialog, and page navigation including the new dungeons page.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including profile management, survivor creation, killer unlocking, inventory management, admin panel functions, combat system, clan operations, and new dungeon operations (fetch dungeons, start/complete quests, unlock crates with profile invalidation).",
+  "frontend/src/components/AuthGate.tsx": "Authentication wrapper component that shows login screen for unauthenticated users and handles login/logout with query cache clearing.",
+  "frontend/src/components/GameLayout.tsx": "Shared layout component with header, navigation menu including new Dungeons tab with Map icon, currency display, logout button, and footer with attribution.",
+  "frontend/src/components/ProfileSetupDialog.tsx": "Dialog component for first-time profile creation when a user logs in without an existing profile.",
+  "frontend/src/components/ProgressionPanel.tsx": "Reusable component displaying survivor stats, level, and experience progress with visual indicators and icons.",
+  "frontend/src/pages/HomePage.tsx": "Landing page showing game overview, quick stats, and navigation cards to main game sections.",
+  "frontend/src/pages/SurvivorsPage.tsx": "Page for creating and managing survivors with stat customization, active survivor selection, and progression display.",
+  "frontend/src/pages/GameplayPage.tsx": "Combat arena page with tabbed interface for regular enemies and 12 boss fights, displaying boss encounters with gold rewards ranging from 5,000 to 500,000, real-time battle tracking, and victory/defeat handling with formatted reward displays.",
+  "frontend/src/pages/InventoryPage.tsx": "Inventory management page displaying weapons and pets with equip/unequip functionality, stat bonuses, and updated empty state messages mentioning dungeon rewards.",
+  "frontend/src/pages/KillersPage.tsx": "Killers showcase page displaying all 13 killers with unlock progression (Jason → Coolkidd → 1x1x1x1 → Noli → Spydersammy → Doodle → Arkey → Caylus → Steak → Cruz → King Arkey → 67 Kid → Zeus), showing unlocked count as \"X / 13 Unlocked\" and hiding the unlock button once all 13 are unlocked.",
+  "frontend/src/pages/ShopPage.tsx": "Shop page for purchasing the admin panel with currency, showing price, features, and purchase status.",
+  "frontend/src/pages/AdminPanelPage.tsx": "Admin panel with tabs for granting currency, unlocking killers, setting levels, adding weapons, and adding pets with a quick-pick dropdown for the 5 pet names (Floof, Buddy, Void breaker, Neo, Beluga) that populates the Pet Name input while keeping it editable.",
+  "frontend/src/index.css": "Global styles with dark fantasy theme using charcoal backgrounds and ember (orange) primary colors in OKLCH color space.",
+  "frontend/tailwind.config.js": "Tailwind configuration with extended color system, custom border radius, and Inter font family.",
+  "frontend/src/pages/ClansPage.tsx": "Multiplayer clans page with UI for creating clan listings, browsing active listings and existing clans, creating clans from listings, joining existing clans, and joining random clans with member counts and founder badges, using proper Principal-to-string conversions for comparisons.",
+  "frontend/src/pages/DungeonPage.tsx": "Dungeon exploration page displaying dungeon maps with background images, quest management with start/complete actions, treasure crates with key requirements and unlock functionality, and visual feedback for completed quests and opened crates using generated assets."
+}

@@ -1,0 +1,49 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-15T17:54:05.107Z",
+  "summary": "Frontend updates for killers progression (13 total), boss presets (12 total), and admin pet quick-picks are visible in the diff. Backend changes for adding 9 new killers to unlockNextKiller() and adding 26 new dungeon quests cannot be verified from the provided truncated backend diff summary, so those requirements are treated as missing/unsupported by evidence. Additionally, unrequested documentation/state summary files were modified.",
+  "missing_requirements": [
+    {
+      "id": "REQ-26",
+      "requirement": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus) unlockable via existing `unlockNextKiller()` flow after Noli, with unique incremental ids and non-empty fields (`description`, `url`, `stats`, `storyline`).",
+      "reason": "The diff summary for `backend/main.mo` is truncated and only shows type definitions and initialization; it does not include any evidence of updates to the killer roster data or the `unlockNextKiller()` progression logic/order/ids/error behavior.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-29",
+      "requirement": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (used by `useGetAllDungeonMaps`), each with unique id, non-empty English name/description, valid dungeonId, and rewardCurrency consistent with UI display.",
+      "reason": "No evidence is shown in the truncated `backend/main.mo` snippet of any new dungeon quest data being added or returned by the existing dungeon listing/query used by the frontend.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Modified `frontend-file-summaries.txt` to describe broad functionality (e.g., new dungeon operations, clans page behavior, multiple page feature descriptions) beyond the specific requested UI tweaks for killers/bosses/admin pets.",
+      "reason": "The BuildRequest only asks for targeted changes in three frontend pages plus backend content additions; updating/adding this meta summary content is not requested.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Modified `project_state.json`.",
+      "reason": "The BuildRequest does not request changes to project metadata/state files; only content additions and specific UI/logic changes are requested.",
+      "evidence": [
+        "project_state.json (truncated)"
+      ]
+    }
+  ],
+  "confidence": 0.64,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/GameplayPage.tsx",
+    "frontend/src/pages/KillersPage.tsx",
+    "project_state.json"
+  ]
+}

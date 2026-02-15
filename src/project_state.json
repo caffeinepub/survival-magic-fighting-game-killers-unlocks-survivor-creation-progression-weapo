@@ -1,0 +1,369 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 13,
+  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks and PvE dungeon map quests with key-locked crates that reward items/pets.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-authenticated-player-profiles-for-the-game-using-the-platform-s-standard-internet-identity-flow-and-persist-each-player-s-game-state-chosen-created-survivors-unlocked-killers-level-exp-stats-currency-inventory-weapons-pets-and-whether-the-admin-panel-is-unlocked",
+      "title": "Implement authenticated player profiles for the game (using the platform’s standard Internet Identity flow) and persist each player’s game state: chosen/created survivors, unlocked killers, level/EXP, stats, currency, inventory (weapons, pets), and whether the admin panel is unlocked.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-core-game-data-models-and-rules-for-a-survival-fighting-experience-with-magic-and-aura-mechanics-including-a-minimal-combat-loop-that-uses-stats-to-compute-damage-and-supports-gaining-exp-from-combat-outcomes",
+      "title": "Create core game data models and rules for a survival/fighting experience with “magic” and “aura” mechanics, including a minimal combat loop that uses stats to compute damage and supports gaining EXP from combat outcomes.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-four-killer-characters-jason-coolkidd-1x1x1x1-noli-and-enforce-killer-unlock-progression-order-jason-coolkidd-1x1x1x1-noli-provide-ui-to-view-killers-and-unlock-the-next-eligible-killer-when-requirements-are-met",
+      "title": "Add the four killer characters (Jason, Coolkidd, 1x1x1x1, Noli) and enforce killer unlock progression order: Jason → Coolkidd → 1x1x1x1 → Noli. Provide UI to view killers and unlock the next eligible killer when requirements are met.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-survivor-creation-so-each-user-must-create-their-own-survivor-characters-include-a-basic-survivor-editor-name-a-small-set-of-starter-attributes-and-allow-selecting-an-active-survivor-for-gameplay",
+      "title": "Implement survivor creation so each user must create their own survivor characters. Include a basic survivor editor (name + a small set of starter attributes) and allow selecting an active survivor for gameplay.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-progression-system-with-exp-level-and-stats-minimum-level-1-maximum-level-2400-define-level-up-behavior-exp-thresholding-and-stat-growth-rules-that-update-player-survivor-stats-when-leveling",
+      "title": "Implement progression system with EXP, level, and stats: minimum level 1, maximum level 2400. Define level-up behavior (EXP thresholding) and stat growth rules that update player/survivor stats when leveling.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-earnable-weapons-with-an-inventory-and-equip-system-players-can-earn-weapons-through-gameplay-rewards-and-equip-exactly-one-weapon-at-a-time-that-affects-combat-stats",
+      "title": "Add earnable weapons with an inventory and equip system. Players can earn weapons through gameplay rewards and equip exactly one weapon at a time that affects combat stats.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-pets-that-can-be-found-earned-and-equipped-players-can-own-multiple-pets-and-equip-exactly-one-pet-at-a-time-that-provides-a-gameplay-bonus",
+      "title": "Add pets that can be found/earned and equipped. Players can own multiple pets and equip exactly one pet at a time that provides a gameplay bonus.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-in-game-currency-system-and-an-admin-panel-purchase-flow-where-a-user-can-spend-in-game-currency-to-unlock-an-admin-panel-for-their-own-account-the-admin-panel-provides-admin-commands-to-manage-game-state-e-g-grant-currency-items-unlock-killers-set-level-exp-stats-for-that-same-account",
+      "title": "Implement an in-game currency system and an admin panel purchase flow where a user can spend in-game currency to unlock an admin panel for their own account. The admin panel provides “admin commands” to manage game state (e.g., grant currency/items, unlock killers, set level/EXP/stats) for that same account.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-coherent-game-appropriate-visual-theme-and-apply-it-consistently-across-the-ui-typography-colors-layout-buttons-cards-avoid-blue-purple-as-the-primary-palette",
+      "title": "Create a coherent, game-appropriate visual theme and apply it consistently across the UI (typography, colors, layout, buttons, cards). Avoid blue/purple as the primary palette.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-static-image-assets-generated-and-render-them-in-the-ui-from-frontend-public-assets-generated-no-backend-serving",
+      "title": "Add required static image assets (generated) and render them in the UI from frontend/public/assets/generated (no backend serving).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-frontend-data-layer-frontend-src-hooks-usequeries-ts-with-a-react-query-mutation-hook-to-invoke-the-new-backend-combat-method-and-refresh-the-cached-currentuserprofile-on-success-surfacing-backend-errors-via-the-existing-toast-pattern",
+      "title": "Extend the frontend data layer (`frontend/src/hooks/useQueries.ts`) with a React Query mutation hook to invoke the new backend combat method and refresh the cached `currentUserProfile` on success, surfacing backend errors via the existing toast pattern.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-placeholder-combat-system-coming-soon-section-in-frontend-src-pages-gameplaypage-tsx-with-an-interactive-combat-ui-that-lets-the-player-start-a-fight-choose-an-enemy-difficulty-if-applicable-perform-combat-actions-and-view-a-battle-log-summary-enemy-stats-damage-events-win-lose-rewards-gained",
+      "title": "Replace the placeholder \"Combat System — Coming Soon\" section in `frontend/src/pages/GameplayPage.tsx` with an interactive combat UI that lets the player start a fight (choose an enemy/difficulty if applicable), perform combat actions, and view a battle log/summary (enemy stats, damage events, win/lose, rewards gained).",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-clans-ui-to-the-react-frontend-that-lets-an-authenticated-user-create-a-clan-browse-clans-join-leave-a-clan-and-if-owner-manage-members-using-react-query-hooks-and-the-existing-toast-error-success-pattern",
+      "title": "Add a Clans UI to the React frontend that lets an authenticated user create a clan, browse clans, join/leave a clan, and (if owner) manage members, using React Query hooks and the existing toast error/success pattern.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-combat-arena-ui-to-include-the-new-boss-encounters-displaying-their-reward-amounts-and-allowing-the-player-to-start-fights-against-bosses-using-the-existing-startcombat-performattack-flow",
+      "title": "Extend the existing Combat Arena UI to include the new boss encounters, displaying their reward amounts and allowing the player to start fights against bosses using the existing startCombat/performAttack flow.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-react-page-that-presents-a-dungeon-map-experience-show-the-available-dungeon-map-s-list-quests-with-their-status-not-started-in-progress-completed-and-list-crates-with-their-lock-open-status-and-key-requirement",
+      "title": "Create a new React page that presents a dungeon map experience: show the available dungeon map(s), list quests with their status (not started / in progress / completed), and list crates with their lock/open status and key requirement.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-integrate-dungeon-navigation-into-the-app-add-a-new-dungeons-page-route-in-frontend-src-app-tsx-and-add-a-corresponding-navigation-item-in-frontend-src-components-gamelayout-tsx-so-authenticated-players-can-reach-the-dungeon-page",
+      "title": "Integrate dungeon navigation into the app: add a new `dungeons` page route in `frontend/src/App.tsx` and add a corresponding navigation item in `frontend/src/components/GameLayout.tsx` so authenticated players can reach the dungeon page.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-frontend-src-hooks-usequeries-ts-with-react-query-hooks-for-the-new-dungeon-feature-fetch-dungeon-content-start-complete-quest-open-crate-using-the-existing-toast-success-error-pattern-and-invalidating-currentuserprofile-after-successful-mutations-that-change-inventory-progress",
+      "title": "Extend `frontend/src/hooks/useQueries.ts` with React Query hooks for the new dungeon feature (fetch dungeon content, start/complete quest, open crate), using the existing toast success/error pattern and invalidating `currentUserProfile` after successful mutations that change inventory/progress.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-dungeon-crate-ux-allow-the-player-to-attempt-to-open-a-crate-if-they-lack-a-key-show-a-clear-error-message-if-successful-show-the-reward-weapon-or-pet-and-ensure-it-appears-in-inventory",
+      "title": "Implement dungeon crate UX: allow the player to attempt to open a crate; if they lack a key, show a clear error message; if successful, show the reward (weapon or pet) and ensure it appears in Inventory.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-newly-generated-dungeon-related-static-image-assets-from-frontend-public-assets-generated-in-the-dungeon-ui-no-backend-image-serving",
+      "title": "Render newly generated dungeon-related static image assets from `frontend/public/assets/generated` in the dungeon UI (no backend image serving).",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-killers-ui-in-frontend-src-pages-killerspage-tsx-to-reflect-the-expanded-killer-roster-and-progression-beyond-the-original-4-killers-1-update-the-displayed-unlock-order-text-to-include-all-killers-through-zeus-in-the-correct-order-2-update-the-unlocked-counter-display-to-use-the-new-total-count-and-3-update-the-canunlocknext-logic-so-players-can-continue-unlocking-killers-until-the-new-final-killer-is-unlocked",
+      "title": "Update the Killers UI in `frontend/src/pages/KillersPage.tsx` to reflect the expanded killer roster and progression beyond the original 4 killers: (1) update the displayed unlock order text to include all killers through Zeus in the correct order, (2) update the unlocked counter display to use the new total count, and (3) update the `canUnlockNext` logic so players can continue unlocking killers until the new final killer is unlocked.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-expand-the-boss-encounter-list-in-frontend-src-pages-gameplaypage-tsx-by-adding-7-additional-bosses-to-the-existing-boss-presets-bringing-the-total-number-of-boss-presets-to-12-each-new-boss-must-have-distinct-name-stats-and-have-goldreward-values-within-the-existing-documented-boss-reward-range-5-000-500-000-inclusive-so-the-bosses-tab-shows-12-selectable-boss-fights",
+      "title": "Expand the boss encounter list in `frontend/src/pages/GameplayPage.tsx` by adding 7 additional bosses to the existing `BOSS_PRESETS`, bringing the total number of boss presets to 12. Each new boss must have distinct name/stats and have `goldReward` values within the existing documented boss reward range (5,000–500,000 inclusive), so the Bosses tab shows 12 selectable boss fights.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-5-requested-pet-names-as-quick-pick-options-in-the-admin-panel-pet-creation-ui-frontend-src-pages-adminpanelpage-tsx-so-a-user-can-populate-the-pet-name-field-with-one-click-selection-for-floof-buddy-void-breaker-neo-beluga-this-must-not-remove-the-ability-to-type-a-custom-pet-name",
+      "title": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement core survival/fighting gameplay with magic/aura mechanics",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add killer characters (Jason, Coolkidd, 1x1x1x1, Noli) with unlock progression order: Jason → Coolkidd → 1x1x1x1 → Noli",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Allow users to create/customize their own survivor characters",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add progression system: EXP, stats, and levels with min level 1 and max level 2400",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add earnable weapons system",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add pets that can be found/earned and equipped",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Monetized admin panel purchase that grants full admin commands/features",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add backend combat operations in `backend/main.mo` so an authenticated player with an active survivor can perform combat actions (e.g., basic attack, magic attack, aura skill) against a generated enemy, receive a deterministic combat result (damage dealt/taken, win/lose), and have their profile updated with earned rewards (at minimum: EXP added to the active survivor; optionally a small currency reward).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add multiplayer features (online/multiplayer gameplay systems)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add more boss enemies/encounters that reward 5,000–500,000 in-game currency",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement asynchronous multiplayer clan data and core clan actions in the Motoko backend, including persistent clan storage and membership rules.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add additional boss enemies/encounters in the backend and ensure boss victories reward currency in the range of 5,000 to 500,000 inclusive.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Expand the in-game shop with additional items (beyond current offerings)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add more battle opponents/enemy variety for combat encounters",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add a \"3D matrix\" visual/theme effect (clarify intended meaning: 3D gameplay vs UI/background effect)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Make user profiles publicly visible (public profile pages/visibility)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add profile settings/editing with ranks and additional profile customization fields",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Add dungeon map quests and key-locked crates that can be unlocked for rewards (items or pets)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Extend the backend game model to support dungeon maps with quests and key-locked crates, including persistent per-player progress and inventories needed for this feature.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Implement backend canister methods to (1) list available dungeon maps/quests/crates, (2) start and complete quests, and (3) unlock/open a crate only when the caller has a key, granting the reward to the caller's profile.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Add a conditional state migration in `backend/migration.mo` if the PlayerProfile schema changes are not backward-compatible, ensuring existing players receive safe defaults for dungeon/quest/key/crate fields on upgrade.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Add 5 new pets to the game: Floof, Buddy, Void Breaker, Neo, Beluga",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Add 26 new dungeon quests (expand dungeon quest content beyond current set)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Add 12 new boss encounters for combat/dungeons (with appropriate rewards)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Add 9 new killer characters: Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King Arkey, 67 Kid, Zeus",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (in this order): Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus. These new killers must be unlockable via the existing `unlockNextKiller()` flow after Noli, with unique incremental `id` values (continuing after the current last killer id) and reasonable non-empty fields for `description`, `url`, `stats`, and `storyline` so the Killers UI can render them.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Survival Magic Fighting Game: Killers Unlocks, Survivor Creation, Progression, Weapons/Pets, Admin Panel Purchase",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

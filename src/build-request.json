@@ -1,0 +1,121 @@
+{
+  "kind": "build_request",
+  "title": "Add 5 new pets, expand dungeon quests by 26, add 12 boss encounters, and add 9 new killers",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-26",
+      "text": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (in this order): Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus. These new killers must be unlockable via the existing `unlockNextKiller()` flow after Noli, with unique incremental `id` values (continuing after the current last killer id) and reasonable non-empty fields for `description`, `url`, `stats`, and `storyline` so the Killers UI can render them.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "I want 5 new pets and 26 new quests with 12 new bosses and 9 new killers.\nPets names\nFloof\nBuddy\nVoid breaker \nNeo\nBeluga.\nKiller names\nSpydersammy\nDoodle\nArkey\nCaylus\nSteak\nCruz\nKing arkey 👑 \n67 kid\nZeus."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calling `unlockNextKiller()` repeatedly from an account that has already unlocked Noli unlocks the next killers in the exact user-provided order until Zeus is unlocked.",
+        "Each newly unlocked killer is appended to the caller profile `killers` array with a unique id and `unlocked = true`.",
+        "Once all killers through Zeus are unlocked, calling `unlockNextKiller()` traps with the existing \"No more killers to unlock\" error (or equivalent behavior already used)."
+      ]
+    },
+    {
+      "id": "REQ-27",
+      "text": "Update the Killers UI in `frontend/src/pages/KillersPage.tsx` to reflect the expanded killer roster and progression beyond the original 4 killers: (1) update the displayed unlock order text to include all killers through Zeus in the correct order, (2) update the unlocked counter display to use the new total count, and (3) update the `canUnlockNext` logic so players can continue unlocking killers until the new final killer is unlocked.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "I want 5 new pets and 26 new quests with 12 new bosses and 9 new killers."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Killers page shows the full progression order ending with Zeus.",
+        "The unlocked badge/count shows `X / 13 Unlocked` (4 existing + 9 new).",
+        "The \"Unlock Next\" card/button remains available until 13 killers are unlocked, and is not shown once all 13 are unlocked."
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "text": "Expand the boss encounter list in `frontend/src/pages/GameplayPage.tsx` by adding 7 additional bosses to the existing `BOSS_PRESETS`, bringing the total number of boss presets to 12. Each new boss must have distinct name/stats and have `goldReward` values within the existing documented boss reward range (5,000–500,000 inclusive), so the Bosses tab shows 12 selectable boss fights.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "I want 5 new pets and 26 new quests with 12 new bosses..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Combat Arena \"Bosses\" tab renders 12 boss cards.",
+        "Each boss card displays its Gold/EXP rewards without layout breakage.",
+        "All boss `goldReward` values are between 5,000 and 500,000 inclusive."
+      ]
+    },
+    {
+      "id": "REQ-29",
+      "text": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "I want 5 new pets and 26 new quests..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The dungeons list endpoint used by the frontend returns 26 additional quests compared to before (total quest count increases by 26).",
+        "Each new quest renders in `frontend/src/pages/DungeonPage.tsx` with a name, description, and reward amount.",
+        "New quests have unique ids and valid dungeonId references (no runtime traps/errors when loading the Dungeons page)."
+      ]
+    },
+    {
+      "id": "REQ-30",
+      "text": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Pets names\nFloof\nBuddy\nVoid breaker \nNeo\nBeluga."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin Panel → Pets tab includes an easy way (e.g., select/dropdown) to choose any of the 5 pet names and populate the Pet Name input.",
+        "Choosing a quick-pick pet name does not prevent manual editing/typing in the Pet Name input.",
+        "The existing Add Pet flow still submits via the existing `useAddPet` mutation and succeeds when a quick-pick name is used."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor with all logic in `backend/main.mo`.",
+    "Do not edit frontend files under `frontend/src/components/ui`, `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx` (compose instead).",
+    "Use English for any user-facing text."
+  ],
+  "nonGoals": [
+    "Implementing new backend canister APIs for boss presets (boss presets are currently frontend-defined).",
+    "Adding new static image assets or changing existing generated images.",
+    "Changing the PlayerProfile schema or performing state migration (content-only additions)."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

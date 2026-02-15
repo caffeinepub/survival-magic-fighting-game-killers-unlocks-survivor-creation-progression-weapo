@@ -1,0 +1,62 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-killers-ui-in-frontend-src-pages-killerspage-tsx-to-reflect-the-expanded-killer-roster-and-progression-beyond-the-original-4-killers-1-update-the-displayed-unlock-order-text-to-include-all-killers-through-zeus-in-the-correct-order-2-update-the-unlocked-counter-display-to-use-the-new-total-count-and-3-update-the-canunlocknext-logic-so-players-can-continue-unlocking-killers-until-the-new-final-killer-is-unlocked",
+      "featureTitle": "Update the Killers UI in `frontend/src/pages/KillersPage.tsx` to reflect the expanded killer roster and progression beyond the original 4 killers: (1) update the displayed unlock order text to include all killers through Zeus in the correct order, (2) update the unlocked counter display to use the new total count, and (3) update the `canUnlockNext` logic so players can continue unlocking killers until the new final killer is unlocked.",
+      "files": [
+        "frontend/src/pages/KillersPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-27"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-expand-the-boss-encounter-list-in-frontend-src-pages-gameplaypage-tsx-by-adding-7-additional-bosses-to-the-existing-boss-presets-bringing-the-total-number-of-boss-presets-to-12-each-new-boss-must-have-distinct-name-stats-and-have-goldreward-values-within-the-existing-documented-boss-reward-range-5-000-500-000-inclusive-so-the-bosses-tab-shows-12-selectable-boss-fights",
+      "featureTitle": "Expand the boss encounter list in `frontend/src/pages/GameplayPage.tsx` by adding 7 additional bosses to the existing `BOSS_PRESETS`, bringing the total number of boss presets to 12. Each new boss must have distinct name/stats and have `goldReward` values within the existing documented boss reward range (5,000–500,000 inclusive), so the Bosses tab shows 12 selectable boss fights.",
+      "files": [
+        "frontend/src/pages/GameplayPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-28"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-the-5-requested-pet-names-as-quick-pick-options-in-the-admin-panel-pet-creation-ui-frontend-src-pages-adminpanelpage-tsx-so-a-user-can-populate-the-pet-name-field-with-one-click-selection-for-floof-buddy-void-breaker-neo-beluga-this-must-not-remove-the-ability-to-type-a-custom-pet-name",
+      "featureTitle": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
+      "files": [
+        "frontend/src/pages/AdminPanelPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-30"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

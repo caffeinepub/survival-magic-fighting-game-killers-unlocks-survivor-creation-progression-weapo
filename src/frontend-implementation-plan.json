@@ -1,0 +1,55 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Frontend updates for expanded killers, bosses, and admin pet quick-picks",
+  "requirements": [
+    {
+      "id": "REQ-27",
+      "summary": "Update Killers page progression text, total unlocked count, and unlock-availability logic for 13 total killers through Zeus.",
+      "acceptanceCriteria": [
+        "Killers page shows the full progression order ending with Zeus.",
+        "The unlocked badge/count shows `X / 13 Unlocked` (4 existing + 9 new).",
+        "The \"Unlock Next\" card/button remains available until 13 killers are unlocked, and is not shown once all 13 are unlocked."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/KillersPage.tsx",
+          "operation": "modify",
+          "description": "Update the displayed unlock order text to include all killers through Zeus in the correct order; update the unlocked counter total to 13; update `canUnlockNext` to allow unlocking until 13 killers are unlocked (and hide the unlock card once 13 are unlocked)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "summary": "Add 7 new boss presets to the Gameplay Combat Arena so the Bosses tab shows 12 selectable boss fights within the allowed reward range.",
+      "acceptanceCriteria": [
+        "The Combat Arena \"Bosses\" tab renders 12 boss cards.",
+        "Each boss card displays its Gold/EXP rewards without layout breakage.",
+        "All boss `goldReward` values are between 5,000 and 500,000 inclusive."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/GameplayPage.tsx",
+          "operation": "modify",
+          "description": "Expand `BOSS_PRESETS` by adding 7 additional distinct bosses (unique names and stats) so there are 12 total boss presets; ensure each new boss uses `goldReward` within 5,000–500,000 inclusive and continues to render correctly in the Bosses tab cards."
+        }
+      ]
+    },
+    {
+      "id": "REQ-30",
+      "summary": "Add 5 pet-name quick-pick options to the Admin Panel pet creation UI without removing manual typing.",
+      "acceptanceCriteria": [
+        "Admin Panel → Pets tab includes an easy way (e.g., select/dropdown) to choose any of the 5 pet names and populate the Pet Name input.",
+        "Choosing a quick-pick pet name does not prevent manual editing/typing in the Pet Name input.",
+        "The existing Add Pet flow still submits via the existing `useAddPet` mutation and succeeds when a quick-pick name is used."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "In the Pets tab, add a quick-pick control (e.g., a dropdown using the existing Select UI) with options: Floof, Buddy, Void breaker, Neo, Beluga; selecting an option sets `petName` while keeping the Pet Name input editable; keep the existing `useAddPet` submission flow unchanged."
+        }
+      ]
+    }
+  ]
+}

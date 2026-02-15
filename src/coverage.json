@@ -1,0 +1,76 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-15T17:54:05.110Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 5,
+    "implemented": 3,
+    "items": [
+      {
+        "id": "REQ-26",
+        "summary": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (in this order): Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus. These new killers must be unlockable via the existing `unlockNextKiller()` flow after Noli, with unique incremental `id` values (continuing after the current last killer id) and reasonable non-empty fields for `description`, `url`, `stats`, and `storyline` so the Killers UI can render them.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-27",
+        "summary": "Update the Killers UI in `frontend/src/pages/KillersPage.tsx` to reflect the expanded killer roster and progression beyond the original 4 killers: (1) update the displayed unlock order text to include all killers through Zeus in the correct order, (2) update the unlocked counter display to use the new total count, and (3) update the `canUnlockNext` logic so players can continue unlocking killers until the new final killer is unlocked.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/KillersPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/KillersPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-28",
+        "summary": "Expand the boss encounter list in `frontend/src/pages/GameplayPage.tsx` by adding 7 additional bosses to the existing `BOSS_PRESETS`, bringing the total number of boss presets to 12. Each new boss must have distinct name/stats and have `goldReward` values within the existing documented boss reward range (5,000–500,000 inclusive), so the Bosses tab shows 12 selectable boss fights.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/GameplayPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/GameplayPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-29",
+        "summary": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-30",
+        "summary": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/GameplayPage.tsx",
+    "frontend/src/pages/KillersPage.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}
