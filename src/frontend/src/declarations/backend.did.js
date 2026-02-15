@@ -8,43 +8,24 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
+export const AdminPanelEvent = IDL.Record({
+  'id' : IDL.Nat,
+  'creator' : IDL.Principal,
+  'description' : IDL.Text,
+  'timestamp' : IDL.Nat,
+  'eventName' : IDL.Text,
+});
 export const Pet = IDL.Record({
   'dropRateBonus' : IDL.Int,
   'name' : IDL.Text,
   'experienceBonus' : IDL.Int,
   'description' : IDL.Text,
   'levelBonus' : IDL.Int,
-});
-export const Weapon = IDL.Record({
-  'name' : IDL.Text,
-  'defenseBonus' : IDL.Int,
-  'attackBonus' : IDL.Int,
-  'description' : IDL.Text,
-  'magicBonus' : IDL.Int,
-  'speedBonus' : IDL.Int,
-});
-export const WhyDontYouJoin = IDL.Record({
-  'id' : IDL.Nat,
-  'active' : IDL.Bool,
-  'name' : IDL.Text,
-  'memberCount' : IDL.Nat,
-  'createClan' : IDL.Bool,
-  'description' : IDL.Text,
-  'imageUrl' : IDL.Text,
-  'leader' : IDL.Principal,
-});
-export const UserRole = IDL.Variant({
-  'admin' : IDL.Null,
-  'user' : IDL.Null,
-  'guest' : IDL.Null,
-});
-export const Clan = IDL.Record({
-  'id' : IDL.Nat,
-  'members' : IDL.Vec(IDL.Principal),
-  'name' : IDL.Text,
-  'createdAt' : IDL.Nat,
-  'memberCount' : IDL.Nat,
-  'founder' : IDL.Principal,
 });
 export const Survivor = IDL.Record({
   'name' : IDL.Text,
@@ -76,46 +57,13 @@ export const Killer = IDL.Record({
   }),
   'unlockCriteria' : IDL.Opt(IDL.Nat),
 });
-export const PlayerProfile = IDL.Record({
-  'hasAdminPanel' : IDL.Bool,
-  'completedQuests' : IDL.Vec(IDL.Nat),
-  'storylineProgress' : IDL.Nat,
-  'activeDungeonId' : IDL.Opt(IDL.Nat),
-  'inventory' : IDL.Vec(IDL.Text),
-  'pets' : IDL.Vec(Pet),
-  'collectedKeys' : IDL.Vec(IDL.Text),
-  'survivors' : IDL.Vec(Survivor),
-  'activeSurvivor' : IDL.Opt(Survivor),
-  'currency' : IDL.Nat,
-  'equippedArmor' : IDL.Opt(IDL.Nat),
-  'killers' : IDL.Vec(Killer),
-  'weapons' : IDL.Vec(Weapon),
-  'openedCrates' : IDL.Vec(IDL.Nat),
-  'equippedWeapon' : IDL.Opt(Weapon),
-  'equippedPet' : IDL.Opt(Pet),
-});
-export const Crate = IDL.Record({
-  'id' : IDL.Nat,
-  'reward' : IDL.Nat,
+export const Weapon = IDL.Record({
   'name' : IDL.Text,
+  'defenseBonus' : IDL.Int,
+  'attackBonus' : IDL.Int,
   'description' : IDL.Text,
-  'requiredKey' : IDL.Text,
-  'location' : IDL.Text,
-});
-export const Quest = IDL.Record({
-  'id' : IDL.Nat,
-  'dungeonId' : IDL.Nat,
-  'rewardCurrency' : IDL.Nat,
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-});
-export const Dungeon = IDL.Record({
-  'id' : IDL.Nat,
-  'difficulty' : IDL.Nat,
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-  'availableCrates' : IDL.Vec(Crate),
-  'quests' : IDL.Vec(Quest),
+  'magicBonus' : IDL.Int,
+  'speedBonus' : IDL.Int,
 });
 export const UserProfile = IDL.Record({
   'hasAdminPanel' : IDL.Bool,
@@ -135,162 +83,79 @@ export const UserProfile = IDL.Record({
   'equippedWeapon' : IDL.Opt(Weapon),
   'equippedPet' : IDL.Opt(Pet),
 });
-export const CombatStatus = IDL.Record({
-  'combatOngoing' : IDL.Bool,
-  'enemyName' : IDL.Text,
-  'enemyHealth' : IDL.Nat,
-  'playerHealth' : IDL.Nat,
-  'playerActiveSurvivor' : Survivor,
-});
-export const Enemy = IDL.Record({
-  'magic' : IDL.Nat,
-  'name' : IDL.Text,
-  'goldReward' : IDL.Nat,
-  'expReward' : IDL.Nat,
-  'speed' : IDL.Nat,
-  'defense' : IDL.Nat,
-  'attack' : IDL.Nat,
-  'health' : IDL.Nat,
-});
-export const Winner = IDL.Variant({ 'player' : IDL.Null, 'enemy' : IDL.Null });
-export const CombatResult = IDL.Record({
-  'rewardCurrency' : IDL.Nat,
-  'winner' : Winner,
-  'rewardExp' : IDL.Nat,
-});
-export const CombatDetails = IDL.Record({
-  'status' : CombatStatus,
-  'result' : IDL.Opt(CombatResult),
-  'enemyStats' : Enemy,
-  'playerStats' : Survivor,
-  'rewardedCurrency' : IDL.Nat,
-  'enemyHealth' : IDL.Nat,
-  'rewardedExp' : IDL.Nat,
-  'playerHealth' : IDL.Nat,
-});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addPet' : IDL.Func([Pet], [], []),
-  'addWeapon' : IDL.Func([Weapon], [], []),
-  'addWhyDontYouJoin' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text],
-      [WhyDontYouJoin],
-      [],
-    ),
-  'adminGrantCurrency' : IDL.Func([IDL.Nat], [], []),
-  'adminSetLevel' : IDL.Func([IDL.Text, IDL.Nat], [], []),
-  'adminUnlockKiller' : IDL.Func([IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'completeQuest' : IDL.Func([IDL.Nat], [], []),
-  'createClanFromJoin' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Opt(Clan)], []),
-  'createPlayerProfile' : IDL.Func([], [PlayerProfile], []),
-  'createSurvivor' : IDL.Func(
-      [
-        IDL.Text,
-        IDL.Record({
-          'magic' : IDL.Nat,
-          'speed' : IDL.Nat,
-          'defense' : IDL.Nat,
-          'attack' : IDL.Nat,
-          'health' : IDL.Nat,
-        }),
-      ],
+  'createAdminPanelEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
+  'followUser' : IDL.Func([IDL.Principal], [], []),
+  'getAdminPanelEventsForCaller' : IDL.Func(
       [],
-      [],
-    ),
-  'earnCurrency' : IDL.Func([IDL.Nat], [], []),
-  'equipPet' : IDL.Func([IDL.Text], [], []),
-  'equipWeapon' : IDL.Func([IDL.Text], [], []),
-  'getActiveDungeon' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
-  'getActiveDungeonMaps' : IDL.Func([], [IDL.Vec(Dungeon)], ['query']),
-  'getActiveWhyDontYouJoins' : IDL.Func(
-      [],
-      [IDL.Vec(WhyDontYouJoin)],
+      [IDL.Vec(AdminPanelEvent)],
       ['query'],
     ),
-  'getAllDungeonKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-  'getAllDungeonMaps' : IDL.Func([], [IDL.Vec(Dungeon)], ['query']),
-  'getAllKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-  'getAllWhyDontYouJoins' : IDL.Func([], [IDL.Vec(WhyDontYouJoin)], ['query']),
-  'getAvailableDungeonMaps' : IDL.Func(
-      [],
-      [IDL.Opt(IDL.Vec(Dungeon))],
+  'getAdminPanelEventsForUser' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(AdminPanelEvent)],
       ['query'],
     ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getClanMarketplace' : IDL.Func([], [IDL.Vec(Clan)], ['query']),
-  'getCollectedKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-  'getCombatStatus' : IDL.Func([], [IDL.Opt(CombatStatus)], ['query']),
-  'getCompletedQuests' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
-  'getOpenedCrates' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
-  'getPlayerInventory' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-  'getPlayerProfile' : IDL.Func([], [PlayerProfile], ['query']),
+  'getCallersFriends' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getUserAdminPanelEvent' : IDL.Func(
+      [IDL.Principal, IDL.Nat],
+      [IDL.Opt(AdminPanelEvent)],
+      ['query'],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getUsersFriends' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(IDL.Principal)],
+      ['query'],
+    ),
+  'getWhoCallerFollowing' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getWhoIsFollowingCaller' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getWhoIsFollowingUser' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(IDL.Principal)],
+      ['query'],
+    ),
+  'getWhoUserIsFollowing' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(IDL.Principal)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'joinExistingClan' : IDL.Func([IDL.Nat], [IDL.Opt(Clan)], []),
-  'joinRandomClan' : IDL.Func([], [IDL.Opt(Clan)], []),
-  'performAttack' : IDL.Func([Enemy], [CombatDetails], []),
-  'performMagicAttack' : IDL.Func([Enemy], [CombatDetails], []),
   'purchaseAdminPanel' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'setActiveSurvivor' : IDL.Func([IDL.Text], [], []),
-  'startCombat' : IDL.Func([Enemy], [], []),
-  'startQuest' : IDL.Func([IDL.Nat], [], []),
-  'unlockCrate' : IDL.Func([IDL.Nat], [], []),
-  'unlockNextKiller' : IDL.Func([], [], []),
-  'updateWhyDontYouJoin' : IDL.Func(
-      [IDL.Nat, IDL.Bool],
-      [IDL.Opt(WhyDontYouJoin)],
-      [],
-    ),
+  'unfollowUser' : IDL.Func([IDL.Principal], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
+  const AdminPanelEvent = IDL.Record({
+    'id' : IDL.Nat,
+    'creator' : IDL.Principal,
+    'description' : IDL.Text,
+    'timestamp' : IDL.Nat,
+    'eventName' : IDL.Text,
+  });
   const Pet = IDL.Record({
     'dropRateBonus' : IDL.Int,
     'name' : IDL.Text,
     'experienceBonus' : IDL.Int,
     'description' : IDL.Text,
     'levelBonus' : IDL.Int,
-  });
-  const Weapon = IDL.Record({
-    'name' : IDL.Text,
-    'defenseBonus' : IDL.Int,
-    'attackBonus' : IDL.Int,
-    'description' : IDL.Text,
-    'magicBonus' : IDL.Int,
-    'speedBonus' : IDL.Int,
-  });
-  const WhyDontYouJoin = IDL.Record({
-    'id' : IDL.Nat,
-    'active' : IDL.Bool,
-    'name' : IDL.Text,
-    'memberCount' : IDL.Nat,
-    'createClan' : IDL.Bool,
-    'description' : IDL.Text,
-    'imageUrl' : IDL.Text,
-    'leader' : IDL.Principal,
-  });
-  const UserRole = IDL.Variant({
-    'admin' : IDL.Null,
-    'user' : IDL.Null,
-    'guest' : IDL.Null,
-  });
-  const Clan = IDL.Record({
-    'id' : IDL.Nat,
-    'members' : IDL.Vec(IDL.Principal),
-    'name' : IDL.Text,
-    'createdAt' : IDL.Nat,
-    'memberCount' : IDL.Nat,
-    'founder' : IDL.Principal,
   });
   const Survivor = IDL.Record({
     'name' : IDL.Text,
@@ -322,46 +187,13 @@ export const idlFactory = ({ IDL }) => {
     }),
     'unlockCriteria' : IDL.Opt(IDL.Nat),
   });
-  const PlayerProfile = IDL.Record({
-    'hasAdminPanel' : IDL.Bool,
-    'completedQuests' : IDL.Vec(IDL.Nat),
-    'storylineProgress' : IDL.Nat,
-    'activeDungeonId' : IDL.Opt(IDL.Nat),
-    'inventory' : IDL.Vec(IDL.Text),
-    'pets' : IDL.Vec(Pet),
-    'collectedKeys' : IDL.Vec(IDL.Text),
-    'survivors' : IDL.Vec(Survivor),
-    'activeSurvivor' : IDL.Opt(Survivor),
-    'currency' : IDL.Nat,
-    'equippedArmor' : IDL.Opt(IDL.Nat),
-    'killers' : IDL.Vec(Killer),
-    'weapons' : IDL.Vec(Weapon),
-    'openedCrates' : IDL.Vec(IDL.Nat),
-    'equippedWeapon' : IDL.Opt(Weapon),
-    'equippedPet' : IDL.Opt(Pet),
-  });
-  const Crate = IDL.Record({
-    'id' : IDL.Nat,
-    'reward' : IDL.Nat,
+  const Weapon = IDL.Record({
     'name' : IDL.Text,
+    'defenseBonus' : IDL.Int,
+    'attackBonus' : IDL.Int,
     'description' : IDL.Text,
-    'requiredKey' : IDL.Text,
-    'location' : IDL.Text,
-  });
-  const Quest = IDL.Record({
-    'id' : IDL.Nat,
-    'dungeonId' : IDL.Nat,
-    'rewardCurrency' : IDL.Nat,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-  });
-  const Dungeon = IDL.Record({
-    'id' : IDL.Nat,
-    'difficulty' : IDL.Nat,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'availableCrates' : IDL.Vec(Crate),
-    'quests' : IDL.Vec(Quest),
+    'magicBonus' : IDL.Int,
+    'speedBonus' : IDL.Int,
   });
   const UserProfile = IDL.Record({
     'hasAdminPanel' : IDL.Bool,
@@ -381,124 +213,60 @@ export const idlFactory = ({ IDL }) => {
     'equippedWeapon' : IDL.Opt(Weapon),
     'equippedPet' : IDL.Opt(Pet),
   });
-  const CombatStatus = IDL.Record({
-    'combatOngoing' : IDL.Bool,
-    'enemyName' : IDL.Text,
-    'enemyHealth' : IDL.Nat,
-    'playerHealth' : IDL.Nat,
-    'playerActiveSurvivor' : Survivor,
-  });
-  const Enemy = IDL.Record({
-    'magic' : IDL.Nat,
-    'name' : IDL.Text,
-    'goldReward' : IDL.Nat,
-    'expReward' : IDL.Nat,
-    'speed' : IDL.Nat,
-    'defense' : IDL.Nat,
-    'attack' : IDL.Nat,
-    'health' : IDL.Nat,
-  });
-  const Winner = IDL.Variant({ 'player' : IDL.Null, 'enemy' : IDL.Null });
-  const CombatResult = IDL.Record({
-    'rewardCurrency' : IDL.Nat,
-    'winner' : Winner,
-    'rewardExp' : IDL.Nat,
-  });
-  const CombatDetails = IDL.Record({
-    'status' : CombatStatus,
-    'result' : IDL.Opt(CombatResult),
-    'enemyStats' : Enemy,
-    'playerStats' : Survivor,
-    'rewardedCurrency' : IDL.Nat,
-    'enemyHealth' : IDL.Nat,
-    'rewardedExp' : IDL.Nat,
-    'playerHealth' : IDL.Nat,
-  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addPet' : IDL.Func([Pet], [], []),
-    'addWeapon' : IDL.Func([Weapon], [], []),
-    'addWhyDontYouJoin' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text],
-        [WhyDontYouJoin],
-        [],
-      ),
-    'adminGrantCurrency' : IDL.Func([IDL.Nat], [], []),
-    'adminSetLevel' : IDL.Func([IDL.Text, IDL.Nat], [], []),
-    'adminUnlockKiller' : IDL.Func([IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'completeQuest' : IDL.Func([IDL.Nat], [], []),
-    'createClanFromJoin' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Opt(Clan)], []),
-    'createPlayerProfile' : IDL.Func([], [PlayerProfile], []),
-    'createSurvivor' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Record({
-            'magic' : IDL.Nat,
-            'speed' : IDL.Nat,
-            'defense' : IDL.Nat,
-            'attack' : IDL.Nat,
-            'health' : IDL.Nat,
-          }),
-        ],
+    'createAdminPanelEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
+    'followUser' : IDL.Func([IDL.Principal], [], []),
+    'getAdminPanelEventsForCaller' : IDL.Func(
         [],
-        [],
-      ),
-    'earnCurrency' : IDL.Func([IDL.Nat], [], []),
-    'equipPet' : IDL.Func([IDL.Text], [], []),
-    'equipWeapon' : IDL.Func([IDL.Text], [], []),
-    'getActiveDungeon' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
-    'getActiveDungeonMaps' : IDL.Func([], [IDL.Vec(Dungeon)], ['query']),
-    'getActiveWhyDontYouJoins' : IDL.Func(
-        [],
-        [IDL.Vec(WhyDontYouJoin)],
+        [IDL.Vec(AdminPanelEvent)],
         ['query'],
       ),
-    'getAllDungeonKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-    'getAllDungeonMaps' : IDL.Func([], [IDL.Vec(Dungeon)], ['query']),
-    'getAllKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-    'getAllWhyDontYouJoins' : IDL.Func(
-        [],
-        [IDL.Vec(WhyDontYouJoin)],
-        ['query'],
-      ),
-    'getAvailableDungeonMaps' : IDL.Func(
-        [],
-        [IDL.Opt(IDL.Vec(Dungeon))],
+    'getAdminPanelEventsForUser' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(AdminPanelEvent)],
         ['query'],
       ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getClanMarketplace' : IDL.Func([], [IDL.Vec(Clan)], ['query']),
-    'getCollectedKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-    'getCombatStatus' : IDL.Func([], [IDL.Opt(CombatStatus)], ['query']),
-    'getCompletedQuests' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
-    'getOpenedCrates' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
-    'getPlayerInventory' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
-    'getPlayerProfile' : IDL.Func([], [PlayerProfile], ['query']),
+    'getCallersFriends' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getUserAdminPanelEvent' : IDL.Func(
+        [IDL.Principal, IDL.Nat],
+        [IDL.Opt(AdminPanelEvent)],
+        ['query'],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getUsersFriends' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getWhoCallerFollowing' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getWhoIsFollowingCaller' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getWhoIsFollowingUser' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getWhoUserIsFollowing' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'joinExistingClan' : IDL.Func([IDL.Nat], [IDL.Opt(Clan)], []),
-    'joinRandomClan' : IDL.Func([], [IDL.Opt(Clan)], []),
-    'performAttack' : IDL.Func([Enemy], [CombatDetails], []),
-    'performMagicAttack' : IDL.Func([Enemy], [CombatDetails], []),
     'purchaseAdminPanel' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'setActiveSurvivor' : IDL.Func([IDL.Text], [], []),
-    'startCombat' : IDL.Func([Enemy], [], []),
-    'startQuest' : IDL.Func([IDL.Nat], [], []),
-    'unlockCrate' : IDL.Func([IDL.Nat], [], []),
-    'unlockNextKiller' : IDL.Func([], [], []),
-    'updateWhyDontYouJoin' : IDL.Func(
-        [IDL.Nat, IDL.Bool],
-        [IDL.Opt(WhyDontYouJoin)],
-        [],
-      ),
+    'unfollowUser' : IDL.Func([IDL.Principal], [], []),
   });
 };
 

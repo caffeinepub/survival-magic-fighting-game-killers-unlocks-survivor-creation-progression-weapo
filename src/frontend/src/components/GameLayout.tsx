@@ -3,9 +3,9 @@ import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Coins, User, Sword, Users, Skull, ShoppingCart, Shield, LogOut, UsersRound, Map } from 'lucide-react';
+import { Coins, User, Sword, Users, Skull, ShoppingCart, Shield, LogOut, UsersRound, Map, Megaphone, UserPlus } from 'lucide-react';
 
-type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons';
+type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social';
 
 interface GameLayoutProps {
   children: React.ReactNode;
@@ -31,6 +31,8 @@ export function GameLayout({ children, currentPage, onNavigate }: GameLayoutProp
     { id: 'killers' as Page, label: 'Killers', icon: Skull },
     { id: 'dungeons' as Page, label: 'Dungeons', icon: Map },
     { id: 'clans' as Page, label: 'Clans', icon: UsersRound },
+    { id: 'updates' as Page, label: 'Updates', icon: Megaphone },
+    { id: 'social' as Page, label: 'Social', icon: UserPlus },
     { id: 'shop' as Page, label: 'Shop', icon: ShoppingCart },
   ];
 

@@ -12,11 +12,13 @@ import { ShopPage } from './pages/ShopPage';
 import { AdminPanelPage } from './pages/AdminPanelPage';
 import { ClansPage } from './pages/ClansPage';
 import { DungeonPage } from './pages/DungeonPage';
+import { UpdatesPage } from './pages/UpdatesPage';
+import { SocialPage } from './pages/SocialPage';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
 
-type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons';
+type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social';
 
 export default function App() {
   const { identity } = useInternetIdentity();
@@ -40,6 +42,8 @@ export default function App() {
             {currentPage === 'inventory' && <InventoryPage />}
             {currentPage === 'killers' && <KillersPage />}
             {currentPage === 'dungeons' && <DungeonPage />}
+            {currentPage === 'updates' && <UpdatesPage />}
+            {currentPage === 'social' && <SocialPage />}
             {currentPage === 'shop' && <ShopPage />}
             {currentPage === 'admin' && <AdminPanelPage />}
             {currentPage === 'clans' && <ClansPage />}

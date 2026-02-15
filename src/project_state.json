@@ -1,8 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
-  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks and PvE dungeon map quests with key-locked crates that reward items/pets.",
-  "architectural_notes": [],
+  "projectStateVersion": 19,
+  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands (cost set to 1,000,000,000 currency), an Admin Panel Events tab for creating events, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks, social features (friends/followers), public chat with commands, an updates page/tab, and PvE dungeon map quests with key-locked crates that reward items/pets.",
+  "architectural_notes": [
+    "Admin panel purchase cost should be set to 1,000,000,000 in-game currency (update any constants/config and UI copy accordingly)."
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
@@ -179,6 +181,70 @@
       "title": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
       "reqIds": [
         "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-updates-navigation-tab-and-page-reachable-for-authenticated-users-from-the-main-in-app-navigation-and-render-an-updates-screen-that-lists-recent-game-update-entries-title-date-and-body-text-using-english-user-facing-copy",
+      "title": "Add a new \"Updates\" navigation tab and page, reachable for authenticated users from the main in-app navigation, and render an Updates screen that lists recent game update entries (title, date, and body text) using English user-facing copy.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-integrate-the-updates-page-into-the-existing-page-routing-pattern-by-extending-the-app-level-page-union-state-and-the-gamelayout-navigation-configuration-to-include-the-new-updates-page-id",
+      "title": "Integrate the Updates page into the existing page-routing pattern by extending the App-level page union/state and the GameLayout navigation configuration to include the new \"updates\" page id.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-social-or-equivalent-navigation-tab-page-that-contains-two-internal-tabs-sections-labeled-friends-and-followers-english-labels-providing-a-basic-social-connections-ui-for-authenticated-users",
+      "title": "Add a new \"Social\" (or equivalent) navigation tab/page that contains two internal tabs/sections labeled \"Friends\" and \"Followers\" (English labels), providing a basic social connections UI for authenticated users.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-frontend-data-layer-frontend-src-hooks-usequeries-ts-with-react-query-hooks-to-call-the-new-backend-social-methods-follow-unfollow-list-followers-list-following-list-friends-using-the-existing-toast-success-error-pattern-and-appropriate-cache-invalidation",
+      "title": "Extend the frontend data layer (`frontend/src/hooks/useQueries.ts`) with React Query hooks to call the new backend social methods (follow/unfollow/list followers/list following/list friends), using the existing toast success/error pattern and appropriate cache invalidation.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-social-page-ui-allow-the-user-to-manage-their-social-graph-by-entering-a-target-user-s-principal-text-input-and-performing-follow-unfollow-actions-and-display-the-resulting-friends-followers-following-lists",
+      "title": "On the Social page UI, allow the user to manage their social graph by entering a target user's Principal (text input) and performing follow/unfollow actions, and display the resulting Friends/Followers/Following lists.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-set-the-admin-panel-purchase-cost-to-exactly-1-000-000-000-in-game-currency-in-both-the-backend-purchase-logic-and-the-shop-ui-so-the-displayed-price-affordability-checks-and-actual-purchase-enforcement-all-match",
+      "title": "Set the Admin Panel purchase cost to exactly 1,000,000,000 in-game currency in both the backend purchase logic and the Shop UI so the displayed price, affordability checks, and actual purchase enforcement all match.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-admin-panel-events-tab-inside-frontend-src-pages-adminpanelpage-tsx-that-is-only-accessible-to-users-who-have-purchased-unlocked-the-admin-panel-and-allow-those-users-to-create-events-from-that-tab-using-english-user-facing-text",
+      "title": "Implement an Admin Panel \"Events\" tab inside `frontend/src/pages/AdminPanelPage.tsx` that is only accessible to users who have purchased/unlocked the Admin Panel, and allow those users to create events from that tab using English user-facing text.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-react-query-data-layer-in-frontend-src-hooks-usequeries-ts-with-hooks-to-call-the-new-backend-events-methods-list-events-create-event-using-the-existing-toast-success-error-pattern-and-appropriate-cache-invalidation-so-the-events-tab-stays-in-sync",
+      "title": "Extend the React Query data layer in `frontend/src/hooks/useQueries.ts` with hooks to call the new backend events methods (list events, create event), using the existing toast success/error pattern and appropriate cache invalidation so the Events tab stays in sync.",
+      "reqIds": [
+        "REQ-41"
       ],
       "version": 1
     }
@@ -359,6 +425,80 @@
       "summary": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
       "reqIds": [
         "REQ-29"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Add 26 new dungeon quests (expand dungeon quest content beyond current set)",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Update the backend dungeon content so the dungeon listing returned to the frontend contains a total of 26 quests across all dungeon maps.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Add a public chat system in its own tab, including chat commands",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Add an Avatar tab for avatar customization/features",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Add admin global announcements feature: admin can post a message shown to all players at the top of their screen for 30 seconds",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Add an Updates page and corresponding navigation tab",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Add Friends and Followers tab (social connections UI)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Implement backend persistence and canister methods to support Friends/Followers relationships between principals, including: follow a user, unfollow a user, list who the caller is following, list who follows the caller, and list the caller's friends (mutual follows).",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Add an Admin Panel \"Events\" tab that is only available to players who have purchased/unlocked the admin panel, allowing them to create/manage in-game events.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Add backend support for Admin Panel Events: define a persisted event model and provide canister methods that allow an authenticated caller who has `hasAdminPanel = true` to create an event and list their created events; callers without the Admin Panel must be rejected with a clear error.",
+      "reqIds": [
+        "REQ-40"
       ],
       "status": "pending"
     }

@@ -6,14 +6,17 @@ import {
   useAdminSetLevel,
   useAddWeapon,
   useAddPet,
+  useGetMyAdminPanelEvents,
+  useCreateAdminPanelEvent,
 } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Shield, Coins, Skull, TrendingUp, Sword, Heart } from 'lucide-react';
+import { Loader2, Shield, Coins, Skull, TrendingUp, Sword, Heart, Calendar } from 'lucide-react';
 
 const PET_QUICK_PICKS = ['Floof', 'Buddy', 'Void breaker', 'Neo', 'Beluga'];
 
@@ -24,6 +27,8 @@ export function AdminPanelPage() {
   const setLevel = useAdminSetLevel();
   const addWeapon = useAddWeapon();
   const addPet = useAddPet();
+  const { data: events, isLoading: eventsLoading } = useGetMyAdminPanelEvents();
+  const createEvent = useCreateAdminPanelEvent();
 
   const [currencyAmount, setCurrencyAmount] = useState('1000');
   const [selectedKiller, setSelectedKiller] = useState('');
@@ -33,6 +38,8 @@ export function AdminPanelPage() {
   const [weaponDesc, setWeaponDesc] = useState('');
   const [petName, setPetName] = useState('');
   const [petDesc, setPetDesc] = useState('');
+  const [eventName, setEventName] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
 
   if (isLoading) {
     return (
@@ -61,6 +68,24 @@ export function AdminPanelPage() {
   const survivors = profile?.survivors || [];
   const killers = profile?.killers || [];
 
+  const handleCreateEvent = () => {
+    if (!eventName.trim() || !eventDescription.trim()) return;
+    
+    createEvent.mutate(
+      {
+        eventName: eventName.trim(),
+        description: eventDescription.trim(),
+        timestamp: BigInt(Date.now()),
+      },
+      {
+        onSuccess: () => {
+          setEventName('');
+          setEventDescription('');
+        },
+      }
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
@@ -72,12 +97,13 @@ export function AdminPanelPage() {
       </div>
 
       <Tabs defaultValue="currency" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="currency">Currency</TabsTrigger>
           <TabsTrigger value="killers">Killers</TabsTrigger>
           <TabsTrigger value="level">Level</TabsTrigger>
           <TabsTrigger value="weapons">Weapons</TabsTrigger>
           <TabsTrigger value="pets">Pets</TabsTrigger>
+          <TabsTrigger value="events">Events</TabsTrigger>
         </TabsList>
 
         <TabsContent value="currency">
@@ -361,6 +387,84 @@ export function AdminPanelPage() {
                   'Add Pet'
                 )}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="events">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Create Event
+              </CardTitle>
+              <CardDescription>Create and manage your events</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="eventName">Event Title</Label>
+                  <Input
+                    id="eventName"
+                    value={eventName}
+                    onChange={(e) => setEventName(e.target.value)}
+                    placeholder="e.g., Weekly Tournament"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="eventDescription">Event Description</Label>
+                  <Textarea
+                    id="eventDescription"
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
+                    placeholder="Describe your event..."
+                    rows={4}
+                  />
+                </div>
+                <Button
+                  onClick={handleCreateEvent}
+                  disabled={createEvent.isPending || !eventName.trim() || !eventDescription.trim()}
+                  className="w-full"
+                >
+                  {createEvent.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Event...
+                    </>
+                  ) : (
+                    'Create Event'
+                  )}
+                </Button>
+              </div>
+
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Your Events</h3>
+                {eventsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : events && events.length > 0 ? (
+                  <div className="space-y-3">
+                    {events.map((event) => (
+                      <Card key={event.id.toString()} className="border-muted">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">{event.eventName}</CardTitle>
+                          <CardDescription className="text-xs">
+                            {new Date(Number(event.timestamp)).toLocaleString()}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">{event.description}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No events created yet. Create your first event above!
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

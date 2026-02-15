@@ -10,61 +10,12 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface Clan {
+export interface AdminPanelEvent {
   'id' : bigint,
-  'members' : Array<Principal>,
-  'name' : string,
-  'createdAt' : bigint,
-  'memberCount' : bigint,
-  'founder' : Principal,
-}
-export interface CombatDetails {
-  'status' : CombatStatus,
-  'result' : [] | [CombatResult],
-  'enemyStats' : Enemy,
-  'playerStats' : Survivor,
-  'rewardedCurrency' : bigint,
-  'enemyHealth' : bigint,
-  'rewardedExp' : bigint,
-  'playerHealth' : bigint,
-}
-export interface CombatResult {
-  'rewardCurrency' : bigint,
-  'winner' : Winner,
-  'rewardExp' : bigint,
-}
-export interface CombatStatus {
-  'combatOngoing' : boolean,
-  'enemyName' : string,
-  'enemyHealth' : bigint,
-  'playerHealth' : bigint,
-  'playerActiveSurvivor' : Survivor,
-}
-export interface Crate {
-  'id' : bigint,
-  'reward' : bigint,
-  'name' : string,
+  'creator' : Principal,
   'description' : string,
-  'requiredKey' : string,
-  'location' : string,
-}
-export interface Dungeon {
-  'id' : bigint,
-  'difficulty' : bigint,
-  'name' : string,
-  'description' : string,
-  'availableCrates' : Array<Crate>,
-  'quests' : Array<Quest>,
-}
-export interface Enemy {
-  'magic' : bigint,
-  'name' : string,
-  'goldReward' : bigint,
-  'expReward' : bigint,
-  'speed' : bigint,
-  'defense' : bigint,
-  'attack' : bigint,
-  'health' : bigint,
+  'timestamp' : bigint,
+  'eventName' : string,
 }
 export interface Killer {
   'id' : bigint,
@@ -89,31 +40,6 @@ export interface Pet {
   'experienceBonus' : bigint,
   'description' : string,
   'levelBonus' : bigint,
-}
-export interface PlayerProfile {
-  'hasAdminPanel' : boolean,
-  'completedQuests' : Array<bigint>,
-  'storylineProgress' : bigint,
-  'activeDungeonId' : [] | [bigint],
-  'inventory' : Array<string>,
-  'pets' : Array<Pet>,
-  'collectedKeys' : Array<string>,
-  'survivors' : Array<Survivor>,
-  'activeSurvivor' : [] | [Survivor],
-  'currency' : bigint,
-  'equippedArmor' : [] | [bigint],
-  'killers' : Array<Killer>,
-  'weapons' : Array<Weapon>,
-  'openedCrates' : Array<bigint>,
-  'equippedWeapon' : [] | [Weapon],
-  'equippedPet' : [] | [Pet],
-}
-export interface Quest {
-  'id' : bigint,
-  'dungeonId' : bigint,
-  'rewardCurrency' : bigint,
-  'name' : string,
-  'description' : string,
 }
 export interface Survivor {
   'name' : string,
@@ -157,80 +83,33 @@ export interface Weapon {
   'magicBonus' : bigint,
   'speedBonus' : bigint,
 }
-export interface WhyDontYouJoin {
-  'id' : bigint,
-  'active' : boolean,
-  'name' : string,
-  'memberCount' : bigint,
-  'createClan' : boolean,
-  'description' : string,
-  'imageUrl' : string,
-  'leader' : Principal,
-}
-export type Winner = { 'player' : null } |
-  { 'enemy' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addPet' : ActorMethod<[Pet], undefined>,
-  'addWeapon' : ActorMethod<[Weapon], undefined>,
-  'addWhyDontYouJoin' : ActorMethod<[string, string, string], WhyDontYouJoin>,
-  'adminGrantCurrency' : ActorMethod<[bigint], undefined>,
-  'adminSetLevel' : ActorMethod<[string, bigint], undefined>,
-  'adminUnlockKiller' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'completeQuest' : ActorMethod<[bigint], undefined>,
-  'createClanFromJoin' : ActorMethod<[bigint, string], [] | [Clan]>,
-  'createPlayerProfile' : ActorMethod<[], PlayerProfile>,
-  'createSurvivor' : ActorMethod<
-    [
-      string,
-      {
-        'magic' : bigint,
-        'speed' : bigint,
-        'defense' : bigint,
-        'attack' : bigint,
-        'health' : bigint,
-      },
-    ],
-    undefined
+  'createAdminPanelEvent' : ActorMethod<[string, string, bigint], undefined>,
+  'followUser' : ActorMethod<[Principal], undefined>,
+  'getAdminPanelEventsForCaller' : ActorMethod<[], Array<AdminPanelEvent>>,
+  'getAdminPanelEventsForUser' : ActorMethod<
+    [Principal],
+    Array<AdminPanelEvent>
   >,
-  'earnCurrency' : ActorMethod<[bigint], undefined>,
-  'equipPet' : ActorMethod<[string], undefined>,
-  'equipWeapon' : ActorMethod<[string], undefined>,
-  'getActiveDungeon' : ActorMethod<[], [] | [bigint]>,
-  'getActiveDungeonMaps' : ActorMethod<[], Array<Dungeon>>,
-  'getActiveWhyDontYouJoins' : ActorMethod<[], Array<WhyDontYouJoin>>,
-  'getAllDungeonKeys' : ActorMethod<[], Array<string>>,
-  'getAllDungeonMaps' : ActorMethod<[], Array<Dungeon>>,
-  'getAllKeys' : ActorMethod<[], Array<string>>,
-  'getAllWhyDontYouJoins' : ActorMethod<[], Array<WhyDontYouJoin>>,
-  'getAvailableDungeonMaps' : ActorMethod<[], [] | [Array<Dungeon>]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getClanMarketplace' : ActorMethod<[], Array<Clan>>,
-  'getCollectedKeys' : ActorMethod<[], Array<string>>,
-  'getCombatStatus' : ActorMethod<[], [] | [CombatStatus]>,
-  'getCompletedQuests' : ActorMethod<[], Array<bigint>>,
-  'getOpenedCrates' : ActorMethod<[], Array<bigint>>,
-  'getPlayerInventory' : ActorMethod<[], Array<string>>,
-  'getPlayerProfile' : ActorMethod<[], PlayerProfile>,
+  'getCallersFriends' : ActorMethod<[], Array<Principal>>,
+  'getUserAdminPanelEvent' : ActorMethod<
+    [Principal, bigint],
+    [] | [AdminPanelEvent]
+  >,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getUsersFriends' : ActorMethod<[Principal], Array<Principal>>,
+  'getWhoCallerFollowing' : ActorMethod<[], Array<Principal>>,
+  'getWhoIsFollowingCaller' : ActorMethod<[], Array<Principal>>,
+  'getWhoIsFollowingUser' : ActorMethod<[Principal], Array<Principal>>,
+  'getWhoUserIsFollowing' : ActorMethod<[Principal], Array<Principal>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'joinExistingClan' : ActorMethod<[bigint], [] | [Clan]>,
-  'joinRandomClan' : ActorMethod<[], [] | [Clan]>,
-  'performAttack' : ActorMethod<[Enemy], CombatDetails>,
-  'performMagicAttack' : ActorMethod<[Enemy], CombatDetails>,
   'purchaseAdminPanel' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'setActiveSurvivor' : ActorMethod<[string], undefined>,
-  'startCombat' : ActorMethod<[Enemy], undefined>,
-  'startQuest' : ActorMethod<[bigint], undefined>,
-  'unlockCrate' : ActorMethod<[bigint], undefined>,
-  'unlockNextKiller' : ActorMethod<[], undefined>,
-  'updateWhyDontYouJoin' : ActorMethod<
-    [bigint, boolean],
-    [] | [WhyDontYouJoin]
-  >,
+  'unfollowUser' : ActorMethod<[Principal], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

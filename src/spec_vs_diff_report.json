@@ -1,49 +1,62 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T17:54:05.107Z",
-  "summary": "Frontend updates for killers progression (13 total), boss presets (12 total), and admin pet quick-picks are visible in the diff. Backend changes for adding 9 new killers to unlockNextKiller() and adding 26 new dungeon quests cannot be verified from the provided truncated backend diff summary, so those requirements are treated as missing/unsupported by evidence. Additionally, unrequested documentation/state summary files were modified.",
+  "generatedAt": "2026-02-15T19:02:38.422Z",
+  "summary": "Diff implements Admin Panel cost constant updates in backend and Shop UI, and adds an Admin Panel “Events” tab with form state and hooks wiring. Backend shows new adminPanelEvents state and a migration module, but the diff summary does not provide enough evidence that required backend event canister methods (create/list with authorization checks) exist, nor that the event type matches the required minimum fields (id/title/description/createdAt).",
   "missing_requirements": [
     {
-      "id": "REQ-26",
-      "requirement": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus) unlockable via existing `unlockNextKiller()` flow after Noli, with unique incremental ids and non-empty fields (`description`, `url`, `stats`, `storyline`).",
-      "reason": "The diff summary for `backend/main.mo` is truncated and only shows type definitions and initialization; it does not include any evidence of updates to the killer roster data or the `unlockNextKiller()` progression logic/order/ids/error behavior.",
+      "id": "REQ-38",
+      "requirement": "Attempting to purchase the Admin Panel with currency < 1_000_000_000 fails with a clear error; purchasing with currency >= 1_000_000_000 succeeds and sets hasAdminPanel = true.",
+      "reason": "Backend purchase enforcement and error messaging for insufficient currency are not shown in the truncated backend/main.mo diff; only the cost constant is visible. Frontend purchase handler portion in ShopPage is truncated as well, so end-to-end enforcement cannot be verified from the provided summary.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo (truncated; only shows `let adminPanelCost : Nat = 1_000_000_000;`)",
+        "frontend/src/pages/ShopPage.tsx (truncated; purchase button handler not fully shown)"
       ]
     },
     {
-      "id": "REQ-29",
-      "requirement": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (used by `useGetAllDungeonMaps`), each with unique id, non-empty English name/description, valid dungeonId, and rewardCurrency consistent with UI display.",
-      "reason": "No evidence is shown in the truncated `backend/main.mo` snippet of any new dungeon quest data being added or returned by the existing dungeon listing/query used by the frontend.",
+      "id": "REQ-40",
+      "requirement": "backend/main.mo defines an Event type with at minimum: id, title, description, createdAt.",
+      "reason": "The diff shows an AdminPanelEvent type in migration.mo with fields `id`, `creator`, `eventName`, `description`, `timestamp`, but does not show a backend/main.mo Event type with the required minimum field names (title/createdAt) or an equivalent type definition in main.mo.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/migration.mo (shows `type AdminPanelEvent = { id; creator; eventName; description; timestamp }`)",
+        "backend/main.mo (truncated; shows `adminPanelEvents` map but no visible Event type definition)"
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "requirement": "Provide canister methods: shared create-event (persisted) and query list-events for the authenticated caller; reject callers without hasAdminPanel=true with a clear error; unauthorized callers trap with existing-pattern auth error.",
+      "reason": "The diff summary does not include any visible canister method implementations for creating or listing events, nor the required authorization/trap behavior. Only state initialization (`adminPanelEvents`) is visible in main.mo.",
+      "evidence": [
+        "backend/main.mo (truncated; shows `let adminPanelEvents = ...` but no create/list methods or auth checks in provided snippet)"
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "requirement": "Extend frontend React Query data layer with list/create event hooks using existing toast success/error pattern and cache invalidation/refetch so Events tab stays in sync.",
+      "reason": "AdminPanelPage imports and uses `useGetMyAdminPanelEvents` and `useCreateAdminPanelEvent`, but the provided truncated portion of useQueries.ts does not show these hook implementations, their toast usage, or cache invalidation keys. Therefore AC-level behavior cannot be verified from the diff summary alone.",
+      "evidence": [
+        "frontend/src/pages/AdminPanelPage.tsx (imports `useGetMyAdminPanelEvents`, `useCreateAdminPanelEvent`)",
+        "frontend/src/hooks/useQueries.ts (truncated; hooks not visible in provided excerpt)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Modified `frontend-file-summaries.txt` to describe broad functionality (e.g., new dungeon operations, clans page behavior, multiple page feature descriptions) beyond the specific requested UI tweaks for killers/bosses/admin pets.",
-      "reason": "The BuildRequest only asks for targeted changes in three frontend pages plus backend content additions; updating/adding this meta summary content is not requested.",
+      "description": "Added a large backend migration module defining many unrelated game types (killers/survivors/weapons/pets/enemies/dungeons/clans/etc.) beyond the Admin Panel Events feature scope.",
+      "reason": "BuildRequest only mentions creating `backend/migration.mo` if needed for backward-incompatible schema change related to the requested features; the diff shows an expansive migration schema not clearly limited to adding Admin Panel Events.",
       "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Modified `project_state.json`.",
-      "reason": "The BuildRequest does not request changes to project metadata/state files; only content additions and specific UI/logic changes are requested.",
-      "evidence": [
-        "project_state.json (truncated)"
+        "backend/migration.mo"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.58,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/GameplayPage.tsx",
-    "frontend/src/pages/KillersPage.tsx",
+    "frontend/src/pages/ShopPage.tsx",
     "project_state.json"
   ]
 }

@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Expand game content by extending killer progression, adding more dungeon quests, increasing boss encounters, and adding quick-pick pet names in the admin UI.
+**Goal:** Add an Admin Panel “Events” tab for Admin Panel owners to create and view their own events, and update the Admin Panel purchase cost to exactly 1,000,000,000 currency across backend and Shop UI.
 
 **Planned changes:**
-- Extend backend killer unlock progression in `backend/main.mo` to add 9 new killers after Noli (Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus) using the existing `unlockNextKiller()` flow, with unique incremental ids and non-empty renderable fields.
-- Update `frontend/src/pages/KillersPage.tsx` to show the full unlock order through Zeus, update the total unlocked count to 13, and allow unlocking until all 13 killers are unlocked.
-- Expand `frontend/src/pages/GameplayPage.tsx` boss presets to a total of 12 bosses by adding 7 new boss entries with distinct stats and `goldReward` between 5,000 and 500,000.
-- Add 26 new dungeon quests in `backend/main.mo` (returned by the existing dungeon listing used by `useGetAllDungeonMaps`) with unique ids, valid dungeonId references, English name/description, and reward currency consistent with the current UI.
-- Add quick-pick options for 5 pet names (Floof, Buddy, Void breaker, Neo, Beluga) in `frontend/src/pages/AdminPanelPage.tsx` without removing manual name entry and while keeping the existing add-pet submission flow.
+- Update Admin Panel purchase price to 1,000,000,000 in backend purchase enforcement and in the Shop UI display/affordability messaging so they match.
+- Add backend persisted event model and canister methods to allow authenticated users with `hasAdminPanel = true` to create an event and list their own events.
+- Add an “Events” tab to the Admin Panel page (visible/accessible only to Admin Panel owners) with an English UI form (title + description) to create events and a list showing created events.
+- Extend the React Query hooks layer to support listing and creating events, including toast success/error behavior and cache invalidation to refresh the events list after creation.
 
-**User-visible outcome:** Players can unlock 9 additional killers (up to 13 total), choose from 12 boss fights in the Combat Arena, and see 26 more dungeon quests; admins can quickly select one of 5 preset pet names when creating pets.
+**User-visible outcome:** Players who own the Admin Panel can open a new “Events” tab to create events (title/description) and see their created events persistently; the Admin Panel costs 1,000,000,000 currency everywhere it is shown and enforced.

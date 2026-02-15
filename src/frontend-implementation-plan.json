@@ -1,53 +1,79 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend updates for expanded killers, bosses, and admin pet quick-picks",
+  "title": "Admin Panel Events tab + Admin Panel price update (frontend)",
   "requirements": [
     {
-      "id": "REQ-27",
-      "summary": "Update Killers page progression text, total unlocked count, and unlock-availability logic for 13 total killers through Zeus.",
+      "id": "REQ-38",
+      "summary": "Update the Admin Panel purchase cost displayed/checked in the Shop UI to exactly 1,000,000,000 so the displayed price, affordability checks, and “need X more currency” messaging match the intended cost.",
       "acceptanceCriteria": [
-        "Killers page shows the full progression order ending with Zeus.",
-        "The unlocked badge/count shows `X / 13 Unlocked` (4 existing + 9 new).",
-        "The \"Unlock Next\" card/button remains available until 13 killers are unlocked, and is not shown once all 13 are unlocked."
+        "In `backend/main.mo`, the Admin Panel cost used by `purchaseAdminPanel()` is 1_000_000_000 (not 10_000).",
+        "In `frontend/src/pages/ShopPage.tsx`, the Admin Panel price display, affordability logic, and “need X more currency” message all use 1_000_000_000.",
+        "Attempting to purchase the Admin Panel with currency < 1_000_000_000 fails with a clear error; purchasing with currency >= 1_000_000_000 succeeds and sets `hasAdminPanel = true`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/KillersPage.tsx",
+          "path": "frontend/src/pages/ShopPage.tsx",
           "operation": "modify",
-          "description": "Update the displayed unlock order text to include all killers through Zeus in the correct order; update the unlocked counter total to 13; update `canUnlockNext` to allow unlocking until 13 killers are unlocked (and hide the unlock card once 13 are unlocked)."
+          "description": "Change the `ADMIN_PANEL_COST` constant from 10,000 to 1,000,000,000 and ensure all related UI calculations (price badge, `canAfford` check, and “need X more currency” message) use this constant consistently."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Ensure the existing `usePurchaseAdminPanel` mutation continues to surface backend failures via the existing toast error pattern (so insufficient-funds errors remain clear to the user), without changing any immutable UI component files."
         }
       ]
     },
     {
-      "id": "REQ-28",
-      "summary": "Add 7 new boss presets to the Gameplay Combat Arena so the Bosses tab shows 12 selectable boss fights within the allowed reward range.",
+      "id": "REQ-39",
+      "summary": "Add an Admin Panel “Events” tab (Admin Panel owners only) that allows creating events and viewing the creator’s events list using existing AdminPanelPage styling conventions and English UI text.",
       "acceptanceCriteria": [
-        "The Combat Arena \"Bosses\" tab renders 12 boss cards.",
-        "Each boss card displays its Gold/EXP rewards without layout breakage.",
-        "All boss `goldReward` values are between 5,000 and 500,000 inclusive."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/GameplayPage.tsx",
-          "operation": "modify",
-          "description": "Expand `BOSS_PRESETS` by adding 7 additional distinct bosses (unique names and stats) so there are 12 total boss presets; ensure each new boss uses `goldReward` within 5,000–500,000 inclusive and continues to render correctly in the Bosses tab cards."
-        }
-      ]
-    },
-    {
-      "id": "REQ-30",
-      "summary": "Add 5 pet-name quick-pick options to the Admin Panel pet creation UI without removing manual typing.",
-      "acceptanceCriteria": [
-        "Admin Panel → Pets tab includes an easy way (e.g., select/dropdown) to choose any of the 5 pet names and populate the Pet Name input.",
-        "Choosing a quick-pick pet name does not prevent manual editing/typing in the Pet Name input.",
-        "The existing Add Pet flow still submits via the existing `useAddPet` mutation and succeeds when a quick-pick name is used."
+        "The Admin Panel Tabs include a new tab labeled \"Events\".",
+        "The Events tab provides a form to create an event (at minimum: event title and event description) and a submit button.",
+        "After successful creation, the form clears and the UI shows the newly created event in a list on the same tab.",
+        "All Events tab UI text is in English and follows existing styling and layout conventions used in AdminPanelPage (Cards, Labels, Inputs, Buttons, Tabs)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/AdminPanelPage.tsx",
           "operation": "modify",
-          "description": "In the Pets tab, add a quick-pick control (e.g., a dropdown using the existing Select UI) with options: Floof, Buddy, Void breaker, Neo, Beluga; selecting an option sets `petName` while keeping the Pet Name input editable; keep the existing `useAddPet` submission flow unchanged."
+          "description": "Add a new `TabsTrigger` labeled \"Events\" and a corresponding `TabsContent` section. Use the existing shadcn/ui building blocks already used on this page (Tabs, Card, Label, Input, Button) to render: (1) a create-event form with title + description fields and a submit button, and (2) a list of the caller’s created events below the form. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Wire the Events tab to the new React Query hooks (from `useQueries.ts`) to (a) fetch the caller’s events when the admin panel is accessible and (b) create a new event on submit. On successful creation, clear the form state and show the newly created event in the list (via cache invalidation/refetch)."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the Events tab remains inaccessible for users without `hasAdminPanel` by keeping the existing early-return guard in place (the page already shows a purchase-required message when `hasAdminPanel` is false)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "summary": "Extend the React Query data layer with events query/mutation hooks that call backend Admin Panel events methods, show success/error toasts, and keep the Events tab list in sync via cache invalidation.",
+      "acceptanceCriteria": [
+        "A `useGetMyEvents` (or equivalent) query hook fetches the caller’s events and is used by the Events tab UI.",
+        "A `useCreateEvent` (or equivalent) mutation hook creates an event and, on success, shows a success toast and refreshes the events list (via invalidation/refetch).",
+        "On backend errors, the hooks show an error toast with the error message (matching the existing pattern used by other hooks in `useQueries.ts`)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a new query hook (e.g., `useGetMyAdminPanelEvents` or `useGetMyEvents`) that calls the backend actor method that lists the caller’s Admin Panel events, following the existing `useGetCallerUserProfile` enabled/actor-availability pattern and using a dedicated queryKey (e.g., `['myAdminPanelEvents']`)."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a new mutation hook (e.g., `useCreateAdminPanelEvent` or `useCreateEvent`) that calls the backend actor method to create an event. Follow the existing toast success/error pattern used throughout `useQueries.ts`, and invalidate/refetch the events list queryKey on success so the Events tab stays in sync."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update imports/types as needed (e.g., include the backend `AdminPanelEvent` type) so the new hooks are strongly typed and consistent with the existing code style."
         }
       ]
     }

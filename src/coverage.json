@@ -1,73 +1,81 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T17:54:05.110Z",
+  "generatedAt": "2026-02-15T19:02:38.426Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
+    "total": 4,
     "implemented": 3,
     "items": [
       {
-        "id": "REQ-26",
-        "summary": "Extend the backend killer unlock progression in `backend/main.mo` to include 9 additional killer characters (in this order): Spydersammy, Doodle, Arkey, Caylus, Steak, Cruz, King arkey 👑, 67 kid, Zeus. These new killers must be unlockable via the existing `unlockNextKiller()` flow after Noli, with unique incremental `id` values (continuing after the current last killer id) and reasonable non-empty fields for `description`, `url`, `stats`, and `storyline` so the Killers UI can render them.",
+        "id": "REQ-38",
+        "summary": "Set the Admin Panel purchase cost to exactly 1,000,000,000 in-game currency in both the backend purchase logic and the Shop UI so the displayed price, affordability checks, and actual purchase enforcement all match.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ShopPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ShopPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ]
+      },
+      {
+        "id": "REQ-39",
+        "summary": "Implement an Admin Panel \"Events\" tab inside `frontend/src/pages/AdminPanelPage.tsx` that is only accessible to users who have purchased/unlocked the Admin Panel, and allow those users to create events from that tab using English user-facing text.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-40",
+        "summary": "Add backend support for Admin Panel Events: define a persisted event model and provide canister methods that allow an authenticated caller who has `hasAdminPanel = true` to create an event and list their created events; callers without the Admin Panel must be rejected with a clear error.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-27",
-        "summary": "Update the Killers UI in `frontend/src/pages/KillersPage.tsx` to reflect the expanded killer roster and progression beyond the original 4 killers: (1) update the displayed unlock order text to include all killers through Zeus in the correct order, (2) update the unlocked counter display to use the new total count, and (3) update the `canUnlockNext` logic so players can continue unlocking killers until the new final killer is unlocked.",
+        "id": "REQ-41",
+        "summary": "Extend the React Query data layer in `frontend/src/hooks/useQueries.ts` with hooks to call the new backend events methods (list events, create event), using the existing toast success/error pattern and appropriate cache invalidation so the Events tab stays in sync.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/KillersPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/KillersPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-28",
-        "summary": "Expand the boss encounter list in `frontend/src/pages/GameplayPage.tsx` by adding 7 additional bosses to the existing `BOSS_PRESETS`, bringing the total number of boss presets to 12. Each new boss must have distinct name/stats and have `goldReward` values within the existing documented boss reward range (5,000–500,000 inclusive), so the Bosses tab shows 12 selectable boss fights.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/GameplayPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/GameplayPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-29",
-        "summary": "Add 26 new dungeon quests to the backend dungeon content in `backend/main.mo` (the data returned by the existing dungeon listing/query used by `useGetAllDungeonMaps`). Each quest must have a unique `id`, a non-empty English `name` and `description`, a valid `dungeonId` that matches an existing dungeon map, and a `rewardCurrency` value consistent with the current quest reward display in the Dungeons UI.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-30",
-        "summary": "Add the 5 requested pet names as quick-pick options in the Admin Panel pet creation UI (`frontend/src/pages/AdminPanelPage.tsx`), so a user can populate the pet name field with one click/selection for: Floof, Buddy, Void breaker, Neo, Beluga. This must not remove the ability to type a custom pet name.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useQueries.ts"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/GameplayPage.tsx",
-    "frontend/src/pages/KillersPage.tsx",
+    "frontend/src/pages/ShopPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

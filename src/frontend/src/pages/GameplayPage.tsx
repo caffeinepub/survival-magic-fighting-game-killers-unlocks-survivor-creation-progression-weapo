@@ -1,182 +1,92 @@
 import { useState } from 'react';
-import { useGetCallerUserProfile, useStartCombat, usePerformAttack } from '../hooks/useQueries';
+import { useGetCallerUserProfile, useStartCombat, usePerformAttack, usePerformMagicAttack } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, AlertCircle, Swords, Heart, Shield, Zap, Sparkles, Crown } from 'lucide-react';
-import { ProgressionPanel } from '../components/ProgressionPanel';
-import type { Enemy, CombatDetails } from '../backend';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Sword, Sparkles, Heart, Shield, Zap, Skull, Trophy, Info } from 'lucide-react';
 
-const ENEMY_PRESETS: Enemy[] = [
-  {
-    name: 'Shadow Minion',
-    health: 50n,
-    attack: 10n,
-    defense: 5n,
-    speed: 8n,
-    magic: 3n,
-    goldReward: 25n,
-    expReward: 15n,
-  },
-  {
-    name: 'Dark Warrior',
-    health: 100n,
-    attack: 20n,
-    defense: 12n,
-    speed: 10n,
-    magic: 8n,
-    goldReward: 75n,
-    expReward: 40n,
-  },
-  {
-    name: 'Void Beast',
-    health: 150n,
-    attack: 30n,
-    defense: 18n,
-    speed: 15n,
-    magic: 15n,
-    goldReward: 150n,
-    expReward: 80n,
-  },
+// Type definitions for combat
+type Enemy = any;
+type CombatDetails = any;
+
+const regularEnemies = [
+  { name: 'Goblin Scout', health: 50n, attack: 10n, defense: 5n, speed: 8n, magic: 2n, goldReward: 25n, expReward: 15n },
+  { name: 'Dark Wolf', health: 75n, attack: 15n, defense: 8n, speed: 12n, magic: 0n, goldReward: 40n, expReward: 25n },
+  { name: 'Skeleton Warrior', health: 100n, attack: 20n, defense: 15n, speed: 6n, magic: 5n, goldReward: 60n, expReward: 35n },
+  { name: 'Shadow Assassin', health: 80n, attack: 25n, defense: 10n, speed: 18n, magic: 8n, goldReward: 75n, expReward: 45n },
+  { name: 'Fire Elemental', health: 120n, attack: 30n, defense: 12n, speed: 10n, magic: 25n, goldReward: 100n, expReward: 60n },
 ];
 
-const BOSS_PRESETS: Enemy[] = [
-  {
-    name: 'Shadow Lord',
-    health: 300n,
-    attack: 50n,
-    defense: 30n,
-    speed: 25n,
-    magic: 40n,
-    goldReward: 5000n,
-    expReward: 500n,
-  },
-  {
-    name: 'Void Tyrant',
-    health: 500n,
-    attack: 75n,
-    defense: 45n,
-    speed: 35n,
-    magic: 60n,
-    goldReward: 25000n,
-    expReward: 1500n,
-  },
-  {
-    name: 'Arcane Overlord',
-    health: 800n,
-    attack: 100n,
-    defense: 60n,
-    speed: 50n,
-    magic: 90n,
-    goldReward: 100000n,
-    expReward: 5000n,
-  },
-  {
-    name: 'Eternal Nightmare',
-    health: 1200n,
-    attack: 150n,
-    defense: 80n,
-    speed: 70n,
-    magic: 120n,
-    goldReward: 250000n,
-    expReward: 10000n,
-  },
-  {
-    name: 'Primordial Chaos',
-    health: 2000n,
-    attack: 200n,
-    defense: 100n,
-    speed: 100n,
-    magic: 180n,
-    goldReward: 500000n,
-    expReward: 25000n,
-  },
-  {
-    name: 'Crimson Reaper',
-    health: 1500n,
-    attack: 175n,
-    defense: 90n,
-    speed: 85n,
-    magic: 140n,
-    goldReward: 350000n,
-    expReward: 15000n,
-  },
-  {
-    name: 'Frost Titan',
-    health: 1800n,
-    attack: 160n,
-    defense: 120n,
-    speed: 60n,
-    magic: 150n,
-    goldReward: 400000n,
-    expReward: 18000n,
-  },
-  {
-    name: 'Storm Warden',
-    health: 1100n,
-    attack: 140n,
-    defense: 75n,
-    speed: 95n,
-    magic: 160n,
-    goldReward: 280000n,
-    expReward: 12000n,
-  },
-  {
-    name: 'Inferno Drake',
-    health: 2200n,
-    attack: 220n,
-    defense: 110n,
-    speed: 90n,
-    magic: 200n,
-    goldReward: 480000n,
-    expReward: 22000n,
-  },
-  {
-    name: 'Abyssal Leviathan',
-    health: 2500n,
-    attack: 240n,
-    defense: 130n,
-    speed: 80n,
-    magic: 220n,
-    goldReward: 495000n,
-    expReward: 28000n,
-  },
-  {
-    name: 'Celestial Guardian',
-    health: 1600n,
-    attack: 190n,
-    defense: 105n,
-    speed: 110n,
-    magic: 175n,
-    goldReward: 420000n,
-    expReward: 20000n,
-  },
-  {
-    name: 'Dread Sovereign',
-    health: 3000n,
-    attack: 250n,
-    defense: 140n,
-    speed: 75n,
-    magic: 240n,
-    goldReward: 500000n,
-    expReward: 30000n,
-  },
+const bossEnemies = [
+  { name: 'Corrupted Knight', health: 500n, attack: 50n, defense: 40n, speed: 15n, magic: 20n, goldReward: 5000n, expReward: 500n },
+  { name: 'Ancient Dragon', health: 1000n, attack: 80n, defense: 60n, speed: 20n, magic: 50n, goldReward: 15000n, expReward: 1000n },
+  { name: 'Lich King', health: 1500n, attack: 100n, defense: 70n, speed: 25n, magic: 80n, goldReward: 30000n, expReward: 1500n },
+  { name: 'Demon Lord', health: 2000n, attack: 120n, defense: 80n, speed: 30n, magic: 100n, goldReward: 50000n, expReward: 2000n },
+  { name: 'Void Titan', health: 2500n, attack: 150n, defense: 100n, speed: 35n, magic: 120n, goldReward: 75000n, expReward: 2500n },
+  { name: 'Celestial Guardian', health: 3000n, attack: 180n, defense: 120n, speed: 40n, magic: 150n, goldReward: 100000n, expReward: 3000n },
+  { name: 'Primordial Beast', health: 3500n, attack: 200n, defense: 140n, speed: 45n, magic: 180n, goldReward: 150000n, expReward: 3500n },
+  { name: 'Chaos Incarnate', health: 4000n, attack: 250n, defense: 160n, speed: 50n, magic: 200n, goldReward: 200000n, expReward: 4000n },
+  { name: 'Eternal Nightmare', health: 4500n, attack: 300n, defense: 180n, speed: 55n, magic: 250n, goldReward: 300000n, expReward: 4500n },
+  { name: 'Reality Breaker', health: 5000n, attack: 350n, defense: 200n, speed: 60n, magic: 300n, goldReward: 400000n, expReward: 5000n },
+  { name: 'Cosmic Horror', health: 6000n, attack: 400n, defense: 250n, speed: 65n, magic: 350n, goldReward: 450000n, expReward: 6000n },
+  { name: 'The Absolute', health: 10000n, attack: 500n, defense: 300n, speed: 70n, magic: 500n, goldReward: 500000n, expReward: 10000n },
 ];
 
 export function GameplayPage() {
-  const { data: profile, isLoading } = useGetCallerUserProfile();
+  const { data: profile, isLoading: profileLoading } = useGetCallerUserProfile();
   const startCombat = useStartCombat();
   const performAttack = usePerformAttack();
+  const performMagicAttack = usePerformMagicAttack();
 
-  const [selectedEnemy, setSelectedEnemy] = useState<Enemy | null>(null);
-  const [combatActive, setCombatActive] = useState(false);
-  const [battleLog, setBattleLog] = useState<string[]>([]);
+  const [currentEnemy, setCurrentEnemy] = useState<Enemy | null>(null);
   const [combatDetails, setCombatDetails] = useState<CombatDetails | null>(null);
+  const [isFighting, setIsFighting] = useState(false);
 
-  if (isLoading) {
+  const activeSurvivor = profile?.activeSurvivor;
+
+  const handleStartCombat = async (enemy: Enemy) => {
+    try {
+      await startCombat.mutateAsync(enemy);
+      setCurrentEnemy(enemy);
+      setIsFighting(true);
+      setCombatDetails(null);
+    } catch (error) {
+      console.error('Failed to start combat:', error);
+    }
+  };
+
+  const handleAttack = async () => {
+    if (!currentEnemy) return;
+    try {
+      const result = await performAttack.mutateAsync(currentEnemy);
+      setCombatDetails(result);
+      if (result.result) {
+        setIsFighting(false);
+        setCurrentEnemy(null);
+      }
+    } catch (error) {
+      console.error('Attack failed:', error);
+    }
+  };
+
+  const handleMagicAttack = async () => {
+    if (!currentEnemy) return;
+    try {
+      const result = await performMagicAttack.mutateAsync(currentEnemy);
+      setCombatDetails(result);
+      if (result.result) {
+        setIsFighting(false);
+        setCurrentEnemy(null);
+      }
+    } catch (error) {
+      console.error('Magic attack failed:', error);
+    }
+  };
+
+  if (profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -184,322 +94,177 @@ export function GameplayPage() {
     );
   }
 
-  const activeSurvivor = profile?.activeSurvivor;
-
   if (!activeSurvivor) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold">Combat Arena</h1>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+      <div className="max-w-2xl mx-auto">
+        <Alert className="border-primary/50 bg-primary/10">
+          <Info className="h-4 w-4" />
           <AlertDescription>
-            You need to create and select an active survivor before entering combat. Visit the Survivors page to get
-            started.
+            You need to create and select an active survivor before entering combat. Visit the Survivors page to get started!
           </AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  const handleStartFight = async (enemy: Enemy) => {
-    try {
-      await startCombat.mutateAsync(enemy);
-      setSelectedEnemy(enemy);
-      setCombatActive(true);
-      setBattleLog([`Combat started against ${enemy.name}!`]);
-      setCombatDetails({
-        playerStats: activeSurvivor,
-        enemyStats: enemy,
-        playerHealth: activeSurvivor.stats.health,
-        enemyHealth: enemy.health,
-        rewardedCurrency: 0n,
-        rewardedExp: 0n,
-        status: {
-          combatOngoing: true,
-          enemyName: enemy.name,
-          enemyHealth: enemy.health,
-          playerHealth: activeSurvivor.stats.health,
-          playerActiveSurvivor: activeSurvivor,
-        },
-        result: undefined,
-      });
-    } catch (error) {
-      console.error('Failed to start combat:', error);
-    }
+  const formatNumber = (num: bigint | number) => {
+    return Number(num).toLocaleString();
   };
-
-  const handleAttack = async () => {
-    if (!selectedEnemy) return;
-
-    try {
-      const result = await performAttack.mutateAsync(selectedEnemy);
-      
-      const playerDamage = Number(result.playerStats.stats.attack);
-      const enemyDamage = Number(result.enemyStats.attack);
-      
-      setBattleLog((prev) => [
-        ...prev,
-        `You dealt ${playerDamage} damage to ${result.enemyStats.name}!`,
-        `${result.enemyStats.name} dealt ${enemyDamage} damage to you!`,
-      ]);
-
-      setCombatDetails(result);
-
-      if (result.result) {
-        setCombatActive(false);
-        if (result.result.winner === 'player') {
-          setBattleLog((prev) => [
-            ...prev,
-            `Victory! You earned ${Number(result.rewardedCurrency).toLocaleString()} gold and ${Number(result.rewardedExp).toLocaleString()} EXP!`,
-          ]);
-        } else {
-          setBattleLog((prev) => [...prev, 'You were defeated!']);
-        }
-      }
-    } catch (error) {
-      console.error('Attack failed:', error);
-    }
-  };
-
-  const handleNewFight = () => {
-    setSelectedEnemy(null);
-    setCombatActive(false);
-    setBattleLog([]);
-    setCombatDetails(null);
-  };
-
-  const isActionDisabled = startCombat.isPending || performAttack.isPending;
-
-  const renderEnemyCard = (enemy: Enemy, isBoss: boolean = false) => (
-    <Card key={enemy.name} className={isBoss ? 'border-primary/40 bg-primary/5' : 'border-muted'}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              {isBoss && <Crown className="w-5 h-5 text-primary" />}
-              {enemy.name}
-            </h3>
-            <div className="flex gap-2 mt-1">
-              <Badge variant={isBoss ? 'default' : 'outline'} className="text-xs">
-                <Sparkles className="w-3 h-3 mr-1" />
-                {Number(enemy.goldReward).toLocaleString()} Gold
-              </Badge>
-              <Badge variant={isBoss ? 'default' : 'outline'} className="text-xs">
-                <Zap className="w-3 h-3 mr-1" />
-                {Number(enemy.expReward).toLocaleString()} EXP
-              </Badge>
-            </div>
-          </div>
-          <Button
-            onClick={() => handleStartFight(enemy)}
-            disabled={isActionDisabled}
-            size="sm"
-            variant={isBoss ? 'default' : 'secondary'}
-          >
-            {startCombat.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Swords className="w-4 h-4 mr-1" />
-                Fight
-              </>
-            )}
-          </Button>
-        </div>
-        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Heart className="w-3 h-3" />
-            {Number(enemy.health)} HP
-          </div>
-          <div className="flex items-center gap-1">
-            <Swords className="w-3 h-3" />
-            {Number(enemy.attack)} ATK
-          </div>
-          <div className="flex items-center gap-1">
-            <Shield className="w-3 h-3" />
-            {Number(enemy.defense)} DEF
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center gap-4">
-        <img src="/assets/generated/icon-aura.dim_128x128.png" alt="Aura" className="w-16 h-16" />
+        <Sword className="w-12 h-12 text-primary" />
         <div>
           <h1 className="text-3xl font-bold">Combat Arena</h1>
-          <p className="text-muted-foreground">Master magic and aura to defeat your enemies</p>
+          <p className="text-muted-foreground">Battle enemies and earn rewards</p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Your Survivor</h2>
-          <ProgressionPanel survivor={activeSurvivor} />
-
-          {profile?.equippedWeapon && (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <img src="/assets/generated/icon-weapon.dim_128x128.png" alt="Weapon" className="w-6 h-6" />
-                  Equipped Weapon
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-semibold">{profile.equippedWeapon.name}</p>
-                <p className="text-sm text-muted-foreground">{profile.equippedWeapon.description}</p>
-                <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
-                  <div>Attack: +{Number(profile.equippedWeapon.attackBonus)}</div>
-                  <div>Defense: +{Number(profile.equippedWeapon.defenseBonus)}</div>
-                  <div>Speed: +{Number(profile.equippedWeapon.speedBonus)}</div>
-                  <div>Magic: +{Number(profile.equippedWeapon.magicBonus)}</div>
+      {isFighting && currentEnemy && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Skull className="w-6 h-6 text-destructive" />
+              Fighting: {currentEnemy.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {combatDetails && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Your Health</span>
+                  <span className="text-sm">{Number(combatDetails.playerHealth)}</span>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <Progress value={(Number(combatDetails.playerHealth) / Number(activeSurvivor.stats.health)) * 100} />
 
-          {profile?.equippedPet && (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <img src="/assets/generated/icon-pet.dim_128x128.png" alt="Pet" className="w-6 h-6" />
-                  Equipped Pet
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-semibold">{profile.equippedPet.name}</p>
-                <p className="text-sm text-muted-foreground">{profile.equippedPet.description}</p>
-                <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
-                  <div>EXP Bonus: +{Number(profile.equippedPet.experienceBonus)}%</div>
-                  <div>Drop Rate: +{Number(profile.equippedPet.dropRateBonus)}%</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Enemy Health</span>
+                  <span className="text-sm">{Number(combatDetails.enemyHealth)}</span>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                <Progress value={(Number(combatDetails.enemyHealth) / Number(currentEnemy.health)) * 100} className="bg-destructive/20" />
+              </div>
+            )}
 
-        <div className="space-y-4">
-          {!combatActive && !combatDetails?.result ? (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle>Select Your Enemy</CardTitle>
-                <CardDescription>Choose an opponent to battle</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="enemies" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="enemies">Enemies</TabsTrigger>
-                    <TabsTrigger value="bosses">
-                      <Crown className="w-4 h-4 mr-1" />
-                      Bosses
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="enemies" className="space-y-3 mt-4">
-                    {ENEMY_PRESETS.map((enemy) => renderEnemyCard(enemy, false))}
-                  </TabsContent>
-                  <TabsContent value="bosses" className="space-y-3 mt-4">
-                    {BOSS_PRESETS.map((enemy) => renderEnemyCard(enemy, true))}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Battle in Progress</span>
-                  {combatDetails?.result && (
-                    <Badge variant={combatDetails.result.winner === 'player' ? 'default' : 'destructive'}>
-                      {combatDetails.result.winner === 'player' ? 'Victory!' : 'Defeated'}
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  {selectedEnemy?.name} - {combatDetails?.result ? 'Battle Complete' : 'Fight!'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {combatDetails && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-muted-foreground">Your Health</p>
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-primary" />
-                          <span className="text-lg font-bold">
-                            {Number(combatDetails.status.playerHealth)} / {Number(combatDetails.playerStats.stats.health)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-muted-foreground">Enemy Health</p>
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-destructive" />
-                          <span className="text-lg font-bold">
-                            {Number(combatDetails.status.enemyHealth)} / {Number(combatDetails.enemyStats.health)}
-                          </span>
-                        </div>
-                      </div>
+            <div className="flex gap-2">
+              <Button onClick={handleAttack} disabled={performAttack.isPending || performMagicAttack.isPending} className="flex-1">
+                {performAttack.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Sword className="w-4 h-4 mr-2" />
+                )}
+                Physical Attack
+              </Button>
+              <Button onClick={handleMagicAttack} disabled={performAttack.isPending || performMagicAttack.isPending} variant="secondary" className="flex-1">
+                {performMagicAttack.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                )}
+                Magic Attack
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Tabs defaultValue="regular" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="regular">Regular Enemies</TabsTrigger>
+          <TabsTrigger value="bosses">Boss Fights</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="regular" className="space-y-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {regularEnemies.map((enemy, index) => (
+              <Card key={index} className="hover:border-primary/50 transition-colors">
+                <CardHeader>
+                  <CardTitle className="text-lg">{enemy.name}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4" />
+                    {formatNumber(enemy.goldReward)} gold • {formatNumber(enemy.expReward)} EXP
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3 text-red-500" />
+                      <span>{Number(enemy.health)}</span>
                     </div>
-
-                    <Separator />
-
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                      <p className="text-sm font-semibold">Battle Log</p>
-                      {battleLog.map((log, index) => (
-                        <p key={index} className="text-sm text-muted-foreground">
-                          {log}
-                        </p>
-                      ))}
+                    <div className="flex items-center gap-1">
+                      <Sword className="w-3 h-3 text-orange-500" />
+                      <span>{Number(enemy.attack)}</span>
                     </div>
-
-                    {combatDetails.result && (
-                      <div className="space-y-2 p-4 rounded-lg bg-muted/50">
-                        <p className="font-semibold">Rewards</p>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-primary" />
-                            <span>{Number(combatDetails.rewardedCurrency).toLocaleString()} Gold</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-primary" />
-                            <span>{Number(combatDetails.rewardedExp).toLocaleString()} EXP</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      {combatActive && !combatDetails.result && (
-                        <Button onClick={handleAttack} disabled={isActionDisabled} className="flex-1">
-                          {performAttack.isPending ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Attacking...
-                            </>
-                          ) : (
-                            <>
-                              <Swords className="mr-2 h-4 w-4" />
-                              Attack
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      {combatDetails.result && (
-                        <Button onClick={handleNewFight} className="flex-1">
-                          New Fight
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-1">
+                      <Shield className="w-3 h-3 text-blue-500" />
+                      <span>{Number(enemy.defense)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-yellow-500" />
+                      <span>{Number(enemy.speed)}</span>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+                  <Button onClick={() => handleStartCombat(enemy)} disabled={isFighting || startCombat.isPending} className="w-full">
+                    {startCombat.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Fight'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="bosses" className="space-y-4">
+          <Alert className="border-destructive/50 bg-destructive/10">
+            <Skull className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Warning:</strong> Boss enemies are extremely powerful. Make sure your survivor is well-equipped and leveled up!
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {bossEnemies.map((enemy, index) => (
+              <Card key={index} className="border-destructive/30 hover:border-destructive/50 transition-colors">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Skull className="w-5 h-5 text-destructive" />
+                      {enemy.name}
+                    </CardTitle>
+                    <Badge variant="destructive">Boss</Badge>
+                  </div>
+                  <CardDescription className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4" />
+                    {formatNumber(enemy.goldReward)} gold • {formatNumber(enemy.expReward)} EXP
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3 text-red-500" />
+                      <span>{formatNumber(enemy.health)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Sword className="w-3 h-3 text-orange-500" />
+                      <span>{Number(enemy.attack)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Shield className="w-3 h-3 text-blue-500" />
+                      <span>{Number(enemy.defense)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-purple-500" />
+                      <span>{Number(enemy.magic)}</span>
+                    </div>
+                  </div>
+                  <Button onClick={() => handleStartCombat(enemy)} disabled={isFighting || startCombat.isPending} variant="destructive" className="w-full">
+                    {startCombat.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Challenge Boss'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

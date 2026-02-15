@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ShoppingCart, Shield, Check, AlertCircle } from 'lucide-react';
 
-const ADMIN_PANEL_COST = 10000;
+const ADMIN_PANEL_COST = 1000000000;
 
 export function ShopPage() {
   const { data: profile, isLoading } = useGetCallerUserProfile();
@@ -71,6 +71,10 @@ export function ShopPage() {
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
                 Set survivor level (1-2400)
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary" />
+                Create and manage events
               </li>
             </ul>
           </div>

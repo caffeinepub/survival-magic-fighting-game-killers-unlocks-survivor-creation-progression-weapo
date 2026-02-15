@@ -89,85 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface WhyDontYouJoin {
-    id: bigint;
-    active: boolean;
-    name: string;
-    memberCount: bigint;
-    createClan: boolean;
-    description: string;
-    imageUrl: string;
-    leader: Principal;
-}
-export interface CombatDetails {
-    status: CombatStatus;
-    result?: CombatResult;
-    enemyStats: Enemy;
-    playerStats: Survivor;
-    rewardedCurrency: bigint;
-    enemyHealth: bigint;
-    rewardedExp: bigint;
-    playerHealth: bigint;
-}
-export interface PlayerProfile {
-    hasAdminPanel: boolean;
-    completedQuests: Array<bigint>;
-    storylineProgress: bigint;
-    activeDungeonId?: bigint;
-    inventory: Array<string>;
-    pets: Array<Pet>;
-    collectedKeys: Array<string>;
-    survivors: Array<Survivor>;
-    activeSurvivor?: Survivor;
-    currency: bigint;
-    equippedArmor?: bigint;
-    killers: Array<Killer>;
-    weapons: Array<Weapon>;
-    openedCrates: Array<bigint>;
-    equippedWeapon?: Weapon;
-    equippedPet?: Pet;
-}
-export interface Killer {
-    id: bigint;
-    url: string;
-    storyline?: string;
-    name: string;
-    unlocked: boolean;
-    description: string;
-    stats: {
-        magic: bigint;
-        level: bigint;
-        speed: bigint;
-        defense: bigint;
-        attack: bigint;
-        health: bigint;
-    };
-    unlockCriteria?: bigint;
-}
-export interface Dungeon {
-    id: bigint;
-    difficulty: bigint;
-    name: string;
-    description: string;
-    availableCrates: Array<Crate>;
-    quests: Array<Quest>;
-}
-export interface Crate {
-    id: bigint;
-    reward: bigint;
-    name: string;
-    description: string;
-    requiredKey: string;
-    location: string;
-}
-export interface Clan {
-    id: bigint;
-    members: Array<Principal>;
-    name: string;
-    createdAt: bigint;
-    memberCount: bigint;
-    founder: Principal;
-}
 export interface Survivor {
     name: string;
     level: bigint;
@@ -188,16 +109,6 @@ export interface Pet {
     description: string;
     levelBonus: bigint;
 }
-export interface Enemy {
-    magic: bigint;
-    name: string;
-    goldReward: bigint;
-    expReward: bigint;
-    speed: bigint;
-    defense: bigint;
-    attack: bigint;
-    health: bigint;
-}
 export interface Weapon {
     name: string;
     defenseBonus: bigint;
@@ -206,24 +117,29 @@ export interface Weapon {
     magicBonus: bigint;
     speedBonus: bigint;
 }
-export interface Quest {
+export interface Killer {
     id: bigint;
-    dungeonId: bigint;
-    rewardCurrency: bigint;
+    url: string;
+    storyline?: string;
     name: string;
+    unlocked: boolean;
     description: string;
+    stats: {
+        magic: bigint;
+        level: bigint;
+        speed: bigint;
+        defense: bigint;
+        attack: bigint;
+        health: bigint;
+    };
+    unlockCriteria?: bigint;
 }
-export interface CombatResult {
-    rewardCurrency: bigint;
-    winner: Winner;
-    rewardExp: bigint;
-}
-export interface CombatStatus {
-    combatOngoing: boolean;
-    enemyName: string;
-    enemyHealth: bigint;
-    playerHealth: bigint;
-    playerActiveSurvivor: Survivor;
+export interface AdminPanelEvent {
+    id: bigint;
+    creator: Principal;
+    description: string;
+    timestamp: bigint;
+    eventName: string;
 }
 export interface UserProfile {
     hasAdminPanel: boolean;
@@ -248,65 +164,29 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
-export enum Winner {
-    player = "player",
-    enemy = "enemy"
-}
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addPet(pet: Pet): Promise<void>;
-    addWeapon(weapon: Weapon): Promise<void>;
-    addWhyDontYouJoin(name: string, description: string, imageUrl: string): Promise<WhyDontYouJoin>;
-    adminGrantCurrency(amount: bigint): Promise<void>;
-    adminSetLevel(survivorName: string, newLevel: bigint): Promise<void>;
-    adminUnlockKiller(killerId: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    completeQuest(questId: bigint): Promise<void>;
-    createClanFromJoin(whyJoinId: bigint, clanName: string): Promise<Clan | null>;
-    createPlayerProfile(): Promise<PlayerProfile>;
-    createSurvivor(name: string, startingStats: {
-        magic: bigint;
-        speed: bigint;
-        defense: bigint;
-        attack: bigint;
-        health: bigint;
-    }): Promise<void>;
-    earnCurrency(amount: bigint): Promise<void>;
-    equipPet(petName: string): Promise<void>;
-    equipWeapon(weaponName: string): Promise<void>;
-    getActiveDungeon(): Promise<bigint | null>;
-    getActiveDungeonMaps(): Promise<Array<Dungeon>>;
-    getActiveWhyDontYouJoins(): Promise<Array<WhyDontYouJoin>>;
-    getAllDungeonKeys(): Promise<Array<string>>;
-    getAllDungeonMaps(): Promise<Array<Dungeon>>;
-    getAllKeys(): Promise<Array<string>>;
-    getAllWhyDontYouJoins(): Promise<Array<WhyDontYouJoin>>;
-    getAvailableDungeonMaps(): Promise<Array<Dungeon> | null>;
+    createAdminPanelEvent(eventName: string, description: string, timestamp: bigint): Promise<void>;
+    followUser(target: Principal): Promise<void>;
+    getAdminPanelEventsForCaller(): Promise<Array<AdminPanelEvent>>;
+    getAdminPanelEventsForUser(user: Principal): Promise<Array<AdminPanelEvent>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getClanMarketplace(): Promise<Array<Clan>>;
-    getCollectedKeys(): Promise<Array<string>>;
-    getCombatStatus(): Promise<CombatStatus | null>;
-    getCompletedQuests(): Promise<Array<bigint>>;
-    getOpenedCrates(): Promise<Array<bigint>>;
-    getPlayerInventory(): Promise<Array<string>>;
-    getPlayerProfile(): Promise<PlayerProfile>;
+    getCallersFriends(): Promise<Array<Principal>>;
+    getUserAdminPanelEvent(user: Principal, eventId: bigint): Promise<AdminPanelEvent | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUsersFriends(user: Principal): Promise<Array<Principal>>;
+    getWhoCallerFollowing(): Promise<Array<Principal>>;
+    getWhoIsFollowingCaller(): Promise<Array<Principal>>;
+    getWhoIsFollowingUser(user: Principal): Promise<Array<Principal>>;
+    getWhoUserIsFollowing(user: Principal): Promise<Array<Principal>>;
     isCallerAdmin(): Promise<boolean>;
-    joinExistingClan(clanId: bigint): Promise<Clan | null>;
-    joinRandomClan(): Promise<Clan | null>;
-    performAttack(enemy: Enemy): Promise<CombatDetails>;
-    performMagicAttack(_enemy: Enemy): Promise<CombatDetails>;
     purchaseAdminPanel(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    setActiveSurvivor(survivorName: string): Promise<void>;
-    startCombat(enemy: Enemy): Promise<void>;
-    startQuest(questId: bigint): Promise<void>;
-    unlockCrate(crateId: bigint): Promise<void>;
-    unlockNextKiller(): Promise<void>;
-    updateWhyDontYouJoin(id: bigint, active: boolean): Promise<WhyDontYouJoin | null>;
+    unfollowUser(target: Principal): Promise<void>;
 }
-import type { Clan as _Clan, CombatDetails as _CombatDetails, CombatResult as _CombatResult, CombatStatus as _CombatStatus, Dungeon as _Dungeon, Enemy as _Enemy, Killer as _Killer, Pet as _Pet, PlayerProfile as _PlayerProfile, Survivor as _Survivor, UserProfile as _UserProfile, UserRole as _UserRole, Weapon as _Weapon, WhyDontYouJoin as _WhyDontYouJoin, Winner as _Winner } from "./declarations/backend.did.d.ts";
+import type { AdminPanelEvent as _AdminPanelEvent, Killer as _Killer, Pet as _Pet, Survivor as _Survivor, UserProfile as _UserProfile, UserRole as _UserRole, Weapon as _Weapon } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -320,90 +200,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
-            return result;
-        }
-    }
-    async addPet(arg0: Pet): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.addPet(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.addPet(arg0);
-            return result;
-        }
-    }
-    async addWeapon(arg0: Weapon): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.addWeapon(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.addWeapon(arg0);
-            return result;
-        }
-    }
-    async addWhyDontYouJoin(arg0: string, arg1: string, arg2: string): Promise<WhyDontYouJoin> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.addWhyDontYouJoin(arg0, arg1, arg2);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.addWhyDontYouJoin(arg0, arg1, arg2);
-            return result;
-        }
-    }
-    async adminGrantCurrency(arg0: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.adminGrantCurrency(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.adminGrantCurrency(arg0);
-            return result;
-        }
-    }
-    async adminSetLevel(arg0: string, arg1: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.adminSetLevel(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.adminSetLevel(arg0, arg1);
-            return result;
-        }
-    }
-    async adminUnlockKiller(arg0: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.adminUnlockKiller(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.adminUnlockKiller(arg0);
             return result;
         }
     }
@@ -421,360 +217,200 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async completeQuest(arg0: bigint): Promise<void> {
+    async createAdminPanelEvent(arg0: string, arg1: string, arg2: bigint): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.completeQuest(arg0);
+                const result = await this.actor.createAdminPanelEvent(arg0, arg1, arg2);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.completeQuest(arg0);
+            const result = await this.actor.createAdminPanelEvent(arg0, arg1, arg2);
             return result;
         }
     }
-    async createClanFromJoin(arg0: bigint, arg1: string): Promise<Clan | null> {
+    async followUser(arg0: Principal): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createClanFromJoin(arg0, arg1);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createClanFromJoin(arg0, arg1);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async createPlayerProfile(): Promise<PlayerProfile> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createPlayerProfile();
-                return from_candid_PlayerProfile_n4(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createPlayerProfile();
-            return from_candid_PlayerProfile_n4(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async createSurvivor(arg0: string, arg1: {
-        magic: bigint;
-        speed: bigint;
-        defense: bigint;
-        attack: bigint;
-        health: bigint;
-    }): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createSurvivor(arg0, arg1);
+                const result = await this.actor.followUser(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createSurvivor(arg0, arg1);
+            const result = await this.actor.followUser(arg0);
             return result;
         }
     }
-    async earnCurrency(arg0: bigint): Promise<void> {
+    async getAdminPanelEventsForCaller(): Promise<Array<AdminPanelEvent>> {
         if (this.processError) {
             try {
-                const result = await this.actor.earnCurrency(arg0);
+                const result = await this.actor.getAdminPanelEventsForCaller();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.earnCurrency(arg0);
+            const result = await this.actor.getAdminPanelEventsForCaller();
             return result;
         }
     }
-    async equipPet(arg0: string): Promise<void> {
+    async getAdminPanelEventsForUser(arg0: Principal): Promise<Array<AdminPanelEvent>> {
         if (this.processError) {
             try {
-                const result = await this.actor.equipPet(arg0);
+                const result = await this.actor.getAdminPanelEventsForUser(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.equipPet(arg0);
+            const result = await this.actor.getAdminPanelEventsForUser(arg0);
             return result;
-        }
-    }
-    async equipWeapon(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.equipWeapon(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.equipWeapon(arg0);
-            return result;
-        }
-    }
-    async getActiveDungeon(): Promise<bigint | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getActiveDungeon();
-                return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getActiveDungeon();
-            return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getActiveDungeonMaps(): Promise<Array<Dungeon>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getActiveDungeonMaps();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getActiveDungeonMaps();
-            return result;
-        }
-    }
-    async getActiveWhyDontYouJoins(): Promise<Array<WhyDontYouJoin>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getActiveWhyDontYouJoins();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getActiveWhyDontYouJoins();
-            return result;
-        }
-    }
-    async getAllDungeonKeys(): Promise<Array<string>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllDungeonKeys();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllDungeonKeys();
-            return result;
-        }
-    }
-    async getAllDungeonMaps(): Promise<Array<Dungeon>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllDungeonMaps();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllDungeonMaps();
-            return result;
-        }
-    }
-    async getAllKeys(): Promise<Array<string>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllKeys();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllKeys();
-            return result;
-        }
-    }
-    async getAllWhyDontYouJoins(): Promise<Array<WhyDontYouJoin>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllWhyDontYouJoins();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllWhyDontYouJoins();
-            return result;
-        }
-    }
-    async getAvailableDungeonMaps(): Promise<Array<Dungeon> | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAvailableDungeonMaps();
-                return from_candid_opt_n14(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAvailableDungeonMaps();
-            return from_candid_opt_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n17(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n17(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n14(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getClanMarketplace(): Promise<Array<Clan>> {
+    async getCallersFriends(): Promise<Array<Principal>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getClanMarketplace();
+                const result = await this.actor.getCallersFriends();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getClanMarketplace();
+            const result = await this.actor.getCallersFriends();
             return result;
         }
     }
-    async getCollectedKeys(): Promise<Array<string>> {
+    async getUserAdminPanelEvent(arg0: Principal, arg1: bigint): Promise<AdminPanelEvent | null> {
         if (this.processError) {
             try {
-                const result = await this.actor.getCollectedKeys();
-                return result;
+                const result = await this.actor.getUserAdminPanelEvent(arg0, arg1);
+                return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getCollectedKeys();
-            return result;
-        }
-    }
-    async getCombatStatus(): Promise<CombatStatus | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getCombatStatus();
-                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getCombatStatus();
-            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getCompletedQuests(): Promise<Array<bigint>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getCompletedQuests();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getCompletedQuests();
-            return result;
-        }
-    }
-    async getOpenedCrates(): Promise<Array<bigint>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getOpenedCrates();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getOpenedCrates();
-            return result;
-        }
-    }
-    async getPlayerInventory(): Promise<Array<string>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getPlayerInventory();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getPlayerInventory();
-            return result;
-        }
-    }
-    async getPlayerProfile(): Promise<PlayerProfile> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getPlayerProfile();
-                return from_candid_PlayerProfile_n4(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getPlayerProfile();
-            return from_candid_PlayerProfile_n4(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getUserAdminPanelEvent(arg0, arg1);
+            return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getUsersFriends(arg0: Principal): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUsersFriends(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUsersFriends(arg0);
+            return result;
+        }
+    }
+    async getWhoCallerFollowing(): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWhoCallerFollowing();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWhoCallerFollowing();
+            return result;
+        }
+    }
+    async getWhoIsFollowingCaller(): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWhoIsFollowingCaller();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWhoIsFollowingCaller();
+            return result;
+        }
+    }
+    async getWhoIsFollowingUser(arg0: Principal): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWhoIsFollowingUser(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWhoIsFollowingUser(arg0);
+            return result;
+        }
+    }
+    async getWhoUserIsFollowing(arg0: Principal): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWhoUserIsFollowing(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWhoUserIsFollowing(arg0);
+            return result;
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -789,62 +425,6 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.isCallerAdmin();
             return result;
-        }
-    }
-    async joinExistingClan(arg0: bigint): Promise<Clan | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.joinExistingClan(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.joinExistingClan(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async joinRandomClan(): Promise<Clan | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.joinRandomClan();
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.joinRandomClan();
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async performAttack(arg0: Enemy): Promise<CombatDetails> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.performAttack(arg0);
-                return from_candid_CombatDetails_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.performAttack(arg0);
-            return from_candid_CombatDetails_n20(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async performMagicAttack(arg0: Enemy): Promise<CombatDetails> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.performMagicAttack(arg0);
-                return from_candid_CombatDetails_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.performMagicAttack(arg0);
-            return from_candid_CombatDetails_n20(this._uploadFile, this._downloadFile, result);
         }
     }
     async purchaseAdminPanel(): Promise<void> {
@@ -864,122 +444,40 @@ export class Backend implements backendInterface {
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n27(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n17(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n27(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n17(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
-    async setActiveSurvivor(arg0: string): Promise<void> {
+    async unfollowUser(arg0: Principal): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.setActiveSurvivor(arg0);
+                const result = await this.actor.unfollowUser(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.setActiveSurvivor(arg0);
+            const result = await this.actor.unfollowUser(arg0);
             return result;
         }
     }
-    async startCombat(arg0: Enemy): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.startCombat(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.startCombat(arg0);
-            return result;
-        }
-    }
-    async startQuest(arg0: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.startQuest(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.startQuest(arg0);
-            return result;
-        }
-    }
-    async unlockCrate(arg0: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.unlockCrate(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.unlockCrate(arg0);
-            return result;
-        }
-    }
-    async unlockNextKiller(): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.unlockNextKiller();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.unlockNextKiller();
-            return result;
-        }
-    }
-    async updateWhyDontYouJoin(arg0: bigint, arg1: boolean): Promise<WhyDontYouJoin | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateWhyDontYouJoin(arg0, arg1);
-                return from_candid_opt_n32(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateWhyDontYouJoin(arg0, arg1);
-            return from_candid_opt_n32(this._uploadFile, this._downloadFile, result);
-        }
-    }
-}
-function from_candid_CombatDetails_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CombatDetails): CombatDetails {
-    return from_candid_record_n21(_uploadFile, _downloadFile, value);
-}
-function from_candid_CombatResult_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CombatResult): CombatResult {
-    return from_candid_record_n24(_uploadFile, _downloadFile, value);
 }
 function from_candid_Killer_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Killer): Killer {
     return from_candid_record_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_PlayerProfile_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PlayerProfile): PlayerProfile {
+function from_candid_UserProfile_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserProfile_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
-    return from_candid_record_n5(_uploadFile, _downloadFile, value);
-}
-function from_candid_UserRole_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n18(_uploadFile, _downloadFile, value);
-}
-function from_candid_Winner_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Winner): Winner {
-    return from_candid_variant_n26(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n15(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
@@ -990,23 +488,11 @@ function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Pet]): Pet | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Array<_Dungeon>]): Array<Dungeon> | null {
+function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AdminPanelEvent]): AdminPanelEvent | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
-    return value.length === 0 ? null : from_candid_UserProfile_n16(_uploadFile, _downloadFile, value[0]);
-}
-function from_candid_opt_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CombatStatus]): CombatStatus | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CombatResult]): CombatResult | null {
-    return value.length === 0 ? null : from_candid_CombatResult_n23(_uploadFile, _downloadFile, value[0]);
-}
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Clan]): Clan | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_WhyDontYouJoin]): WhyDontYouJoin | null {
-    return value.length === 0 ? null : value[0];
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : from_candid_UserProfile_n4(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
@@ -1056,51 +542,6 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
         description: value.description,
         stats: value.stats,
         unlockCriteria: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.unlockCriteria))
-    };
-}
-function from_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    status: _CombatStatus;
-    result: [] | [_CombatResult];
-    enemyStats: _Enemy;
-    playerStats: _Survivor;
-    rewardedCurrency: bigint;
-    enemyHealth: bigint;
-    rewardedExp: bigint;
-    playerHealth: bigint;
-}): {
-    status: CombatStatus;
-    result?: CombatResult;
-    enemyStats: Enemy;
-    playerStats: Survivor;
-    rewardedCurrency: bigint;
-    enemyHealth: bigint;
-    rewardedExp: bigint;
-    playerHealth: bigint;
-} {
-    return {
-        status: value.status,
-        result: record_opt_to_undefined(from_candid_opt_n22(_uploadFile, _downloadFile, value.result)),
-        enemyStats: value.enemyStats,
-        playerStats: value.playerStats,
-        rewardedCurrency: value.rewardedCurrency,
-        enemyHealth: value.enemyHealth,
-        rewardedExp: value.rewardedExp,
-        playerHealth: value.playerHealth
-    };
-}
-function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    rewardCurrency: bigint;
-    winner: _Winner;
-    rewardExp: bigint;
-}): {
-    rewardCurrency: bigint;
-    winner: Winner;
-    rewardExp: bigint;
-} {
-    return {
-        rewardCurrency: value.rewardCurrency,
-        winner: from_candid_Winner_n25(_uploadFile, _downloadFile, value.winner),
-        rewardExp: value.rewardExp
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1157,7 +598,7 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         equippedPet: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.equippedPet))
     };
 }
-function from_candid_variant_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -1166,26 +607,19 @@ function from_candid_variant_n18(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_variant_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    player: null;
-} | {
-    enemy: null;
-}): Winner {
-    return "player" in value ? Winner.player : "enemy" in value ? Winner.enemy : value;
-}
 function from_candid_vec_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Killer>): Array<Killer> {
     return value.map((x)=>from_candid_Killer_n9(_uploadFile, _downloadFile, x));
 }
-function to_candid_Killer_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Killer): _Killer {
-    return to_candid_record_n31(_uploadFile, _downloadFile, value);
+function to_candid_Killer_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Killer): _Killer {
+    return to_candid_record_n21(_uploadFile, _downloadFile, value);
 }
-function to_candid_UserProfile_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n28(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n18(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     hasAdminPanel: boolean;
     completedQuests: Array<bigint>;
     storylineProgress: bigint;
@@ -1232,14 +666,14 @@ function to_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         activeSurvivor: value.activeSurvivor ? candid_some(value.activeSurvivor) : candid_none(),
         currency: value.currency,
         equippedArmor: value.equippedArmor ? candid_some(value.equippedArmor) : candid_none(),
-        killers: to_candid_vec_n29(_uploadFile, _downloadFile, value.killers),
+        killers: to_candid_vec_n19(_uploadFile, _downloadFile, value.killers),
         weapons: value.weapons,
         openedCrates: value.openedCrates,
         equippedWeapon: value.equippedWeapon ? candid_some(value.equippedWeapon) : candid_none(),
         equippedPet: value.equippedPet ? candid_some(value.equippedPet) : candid_none()
     };
 }
-function to_candid_record_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     url: string;
     storyline?: string;
@@ -1298,8 +732,8 @@ function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         guest: null
     } : value;
 }
-function to_candid_vec_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Killer>): Array<_Killer> {
-    return value.map((x)=>to_candid_Killer_n30(_uploadFile, _downloadFile, x));
+function to_candid_vec_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Killer>): Array<_Killer> {
+    return value.map((x)=>to_candid_Killer_n20(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

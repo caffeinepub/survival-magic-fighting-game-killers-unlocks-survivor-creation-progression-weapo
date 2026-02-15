@@ -1,4 +1,4 @@
-import { useGetAllDungeonMaps, useGetCallerUserProfile, useStartQuest, useCompleteQuest, useUnlockCrate } from '../hooks/useQueries';
+import { useGetAllDungeons, useGetCallerUserProfile, useStartQuest, useCompleteQuest, useUnlockCrate } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,7 @@ import { Loader2, CheckCircle2, Lock, Unlock, Key, MapPin, Scroll } from 'lucide
 import { useState } from 'react';
 
 export function DungeonPage() {
-  const { data: dungeons, isLoading: dungeonsLoading } = useGetAllDungeonMaps();
+  const { data: dungeons, isLoading: dungeonsLoading } = useGetAllDungeons();
   const { data: profile, isLoading: profileLoading } = useGetCallerUserProfile();
   const startQuest = useStartQuest();
   const completeQuest = useCompleteQuest();
@@ -127,46 +127,33 @@ export function DungeonPage() {
                           <Card key={Number(quest.id)} className={completed ? 'border-primary/50' : ''}>
                             <CardHeader>
                               <div className="flex items-start justify-between">
-                                <CardTitle className="text-base">{quest.name}</CardTitle>
-                                {completed && (
-                                  <Badge variant="default" className="bg-green-600">
-                                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                                    Completed
-                                  </Badge>
-                                )}
+                                <div className="flex-1">
+                                  <CardTitle className="text-base">{quest.name}</CardTitle>
+                                  <CardDescription className="text-sm mt-1">{quest.description}</CardDescription>
+                                </div>
+                                {completed && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
                               </div>
-                              <CardDescription className="text-sm">{quest.description}</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">Reward:</span>
-                                <span className="font-semibold text-primary">{Number(quest.rewardCurrency)} Gold</span>
-                              </div>
-                              {!completed && (
-                                <div className="flex gap-2">
+                            <CardContent>
+                              <div className="flex items-center justify-between">
+                                <Badge variant="outline">
+                                  <Coins className="w-3 h-3 mr-1" />
+                                  {Number(quest.rewardCurrency)} gold
+                                </Badge>
+                                {!completed && (
                                   <Button
-                                    onClick={() => handleStartQuest(quest.id)}
-                                    disabled={startQuest.isPending}
-                                    variant="outline"
                                     size="sm"
-                                    className="flex-1"
-                                  >
-                                    Start Quest
-                                  </Button>
-                                  <Button
                                     onClick={() => handleCompleteQuest(quest.id)}
                                     disabled={completeQuest.isPending}
-                                    size="sm"
-                                    className="flex-1"
                                   >
                                     {completeQuest.isPending ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                       'Complete'
                                     )}
                                   </Button>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </CardContent>
                           </Card>
                         );
@@ -178,99 +165,79 @@ export function DungeonPage() {
                 {/* Crates Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-primary" />
+                    <MapPin className="w-5 h-5 text-primary" />
                     <h3 className="text-xl font-semibold">Treasure Crates</h3>
                   </div>
 
                   {dungeon.availableCrates.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No crates available in this dungeon.</p>
+                    <p className="text-sm text-muted-foreground">No treasure crates in this dungeon.</p>
                   ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                       {dungeon.availableCrates.map((crate) => {
                         const opened = isCrateOpened(crate.id);
                         const hasRequiredKey = hasKey(crate.requiredKey);
                         return (
-                          <Card key={Number(crate.id)} className={opened ? 'border-primary/50' : 'border-primary/20'}>
-                            <CardHeader>
-                              <div className="flex items-center justify-center py-4">
+                          <Card key={Number(crate.id)} className={opened ? 'border-muted' : 'border-primary/30'}>
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex items-center justify-center">
                                 <img
                                   src={
                                     opened
                                       ? '/assets/generated/crate-open.dim_512x512.png'
                                       : '/assets/generated/crate-locked.dim_512x512.png'
                                   }
-                                  alt={opened ? 'Open crate' : 'Locked crate'}
+                                  alt={crate.name}
                                   className="w-24 h-24 object-contain"
                                 />
                               </div>
-                              <div className="flex items-start justify-between">
-                                <CardTitle className="text-base">{crate.name}</CardTitle>
-                                {opened && (
-                                  <Badge variant="default" className="bg-green-600">
-                                    <Unlock className="w-3 h-3 mr-1" />
-                                    Opened
-                                  </Badge>
-                                )}
-                              </div>
-                              <CardDescription className="text-sm">{crate.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex items-center gap-2 text-sm">
-                                <MapPin className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">{crate.location}</span>
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2">
-                                  <Key className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Required Key:</span>
-                                </div>
-                                <Badge variant={hasRequiredKey ? 'default' : 'outline'}>
-                                  {crate.requiredKey}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">Reward:</span>
-                                <span className="font-semibold text-primary">{Number(crate.reward)} Gold</span>
+                              <div className="text-center">
+                                <h4 className="font-semibold">{crate.name}</h4>
+                                <p className="text-xs text-muted-foreground mt-1">{crate.description}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  <MapPin className="w-3 h-3 inline mr-1" />
+                                  {crate.location}
+                                </p>
                               </div>
                               {!opened && (
-                                <Button
-                                  onClick={() => handleUnlockCrate(crate.id, crate.reward)}
-                                  disabled={unlockCrate.isPending || !hasRequiredKey}
-                                  className="w-full"
-                                  variant={hasRequiredKey ? 'default' : 'outline'}
-                                >
-                                  {unlockCrate.isPending ? (
-                                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                  ) : (
-                                    <Unlock className="w-4 h-4 mr-2" />
-                                  )}
-                                  {hasRequiredKey ? 'Unlock Crate' : 'Key Required'}
-                                </Button>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-center gap-2 text-xs">
+                                    <Key className="w-3 h-3" />
+                                    <span className={hasRequiredKey ? 'text-primary' : 'text-muted-foreground'}>
+                                      {crate.requiredKey}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => handleUnlockCrate(crate.id, crate.reward)}
+                                    disabled={!hasRequiredKey || unlockCrate.isPending}
+                                  >
+                                    {unlockCrate.isPending ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : hasRequiredKey ? (
+                                      <>
+                                        <Unlock className="w-4 h-4 mr-1" />
+                                        Unlock
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Lock className="w-4 h-4 mr-1" />
+                                        Locked
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              )}
+                              {opened && (
+                                <Badge variant="secondary" className="w-full justify-center">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  Opened
+                                </Badge>
                               )}
                             </CardContent>
                           </Card>
                         );
                       })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Keys Info */}
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <img src="/assets/generated/dungeon-key.dim_256x256.png" alt="Keys" className="w-8 h-8" />
-                    <h4 className="font-semibold">Your Keys</h4>
-                  </div>
-                  {collectedKeys.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">You don't have any keys yet. Complete quests to earn keys!</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {collectedKeys.map((key, index) => (
-                        <Badge key={index} variant="outline" className="px-3 py-1">
-                          <Key className="w-3 h-3 mr-1" />
-                          {key}
-                        </Badge>
-                      ))}
                     </div>
                   )}
                 </div>
@@ -282,3 +249,6 @@ export function DungeonPage() {
     </div>
   );
 }
+
+// Missing import for Coins icon
+import { Coins } from 'lucide-react';
