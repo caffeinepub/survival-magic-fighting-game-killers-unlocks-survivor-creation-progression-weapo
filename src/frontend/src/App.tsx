@@ -15,11 +15,12 @@ import { DungeonPage } from './pages/DungeonPage';
 import { UpdatesPage } from './pages/UpdatesPage';
 import { SocialPage } from './pages/SocialPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
+import { AuraClickerPage } from './pages/AuraClickerPage';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
 
-type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social' | 'announcements';
+type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social' | 'announcements' | 'aura';
 
 export default function App() {
   const { identity } = useInternetIdentity();
@@ -46,6 +47,7 @@ export default function App() {
             {currentPage === 'updates' && <UpdatesPage />}
             {currentPage === 'social' && <SocialPage />}
             {currentPage === 'announcements' && <AnnouncementsPage />}
+            {currentPage === 'aura' && <AuraClickerPage />}
             {currentPage === 'shop' && <ShopPage />}
             {currentPage === 'admin' && <AdminPanelPage />}
             {currentPage === 'clans' && <ClansPage />}

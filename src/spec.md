@@ -1,15 +1,16 @@
 # Specification
 
 ## Summary
-**Goal:** Add AI bot PvE fights, expand the Shop with more purchasable items, and introduce an Announcements page with admin-created posts.
+**Goal:** Add user-facing usernames and replace prominent Principal ID displays with usernames while keeping Principals as the internal account identifier.
 
 **Planned changes:**
-- Backend: add APIs to list AI bots and start/execute bot fights using the existing combat flow, awarding and persisting currency/EXP rewards on victory.
-- Frontend: add a Combat Arena section/tab to browse bots and start bot fights, reusing existing combat UI and React Query + toast patterns (including profile cache invalidation).
-- Backend: define shop item catalog data and a purchase API that validates currency/profile, subtracts currency, grants item effects, and persists the result.
-- Frontend: expand the Shop page to list new items alongside the existing Admin Panel card (unchanged), with affordability state, purchase actions, and profile refresh/toasts.
-- Frontend: add an Announcements page in main authenticated navigation that renders a scrollable list of announcement cards (English text).
-- Backend + Frontend: persist announcements, expose list and admin-only create endpoints, and add admin-only UI (via Admin Panel section/tab) to create announcements with cache invalidation.
-- Frontend: update any local Page type unions/navigation helpers to include the new Announcements page and avoid TypeScript errors.
+- Extend the backend `PlayerProfile` model to persist a unique `username` per principal and enforce global uniqueness with clear English errors.
+- Require setting a valid, non-empty username during profile creation (or immediately after via a dedicated method), including validation (format/length/characters/uniqueness) and English error messages.
+- Add backend query method(s) to resolve username(s) from principal(s) and resolve a principal by username for social features.
+- If needed for upgrades, add a conditional migration to safely populate deterministic default usernames for existing profiles and build any required username index.
+- Update the profile setup UI to collect a `Username` as the primary field, with Principal ID shown only as secondary/advanced copyable info.
+- Update `useCreatePlayerProfile` to send the username to the backend and preserve existing toast-based success/error handling and refetch behavior.
+- Update the Social page to follow/unfollow via username input and display usernames in lists (with principal as secondary/fallback), using English UI copy and messages.
+- Update other prominent UI surfaces that currently show “Principal ID” as the player identity to display username instead, keeping principal accessible only as secondary where appropriate.
 
-**User-visible outcome:** Players can fight AI bots for rewards, buy additional shop items with in-game currency, and read announcements; Admin Panel owners can create announcements that appear in the Announcements page.
+**User-visible outcome:** Players choose a unique username during profile setup; the app primarily shows usernames (including in Social follow/unfollow and lists) while still using Principals internally and keeping Principal ID available as secondary info when needed.

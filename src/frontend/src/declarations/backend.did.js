@@ -34,6 +34,14 @@ export const BotCombatStatus = IDL.Record({
   'playerHealth' : IDL.Nat,
   'playerActiveSurvivor' : Survivor,
 });
+export const UsernameUpdateResult = IDL.Variant({
+  'alreadyTaken' : IDL.Null,
+  'createdUsername' : IDL.Text,
+  'internalError' : IDL.Text,
+  'invalidLength' : IDL.Null,
+  'success' : IDL.Null,
+  'invalidCharacters' : IDL.Null,
+});
 export const AdminPanelEvent = IDL.Record({
   'id' : IDL.Nat,
   'creator' : IDL.Principal,
@@ -115,7 +123,9 @@ export const Weapon = IDL.Record({
   'speedBonus' : IDL.Int,
 });
 export const UserProfile = IDL.Record({
+  'rebirthCount' : IDL.Nat,
   'hasAdminPanel' : IDL.Bool,
+  'username' : IDL.Text,
   'completedQuests' : IDL.Vec(IDL.Nat),
   'storylineProgress' : IDL.Nat,
   'activeDungeonId' : IDL.Opt(IDL.Nat),
@@ -123,13 +133,16 @@ export const UserProfile = IDL.Record({
   'pets' : IDL.Vec(Pet),
   'collectedKeys' : IDL.Vec(IDL.Text),
   'survivors' : IDL.Vec(Survivor),
+  'auraLevel' : IDL.Nat,
   'activeSurvivor' : IDL.Opt(Survivor),
   'currency' : IDL.Nat,
+  'auraPower' : IDL.Nat,
   'equippedArmor' : IDL.Opt(IDL.Nat),
   'killers' : IDL.Vec(Killer),
   'weapons' : IDL.Vec(Weapon),
   'openedCrates' : IDL.Vec(IDL.Nat),
   'equippedWeapon' : IDL.Opt(Weapon),
+  'rebirthMultiplier' : IDL.Nat,
   'equippedPet' : IDL.Opt(Pet),
 });
 
@@ -137,8 +150,11 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'attackBot' : IDL.Func([], [BotCombatStatus], []),
+  'checkUsername' : IDL.Func([IDL.Text], [UsernameUpdateResult], ['query']),
+  'clickAura' : IDL.Func([], [], []),
   'createAdminPanelEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
   'createAnnouncement' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'createPlayerProfile' : IDL.Func([], [], []),
   'followUser' : IDL.Func([IDL.Principal], [], []),
   'getAdminPanelEventsForCaller' : IDL.Func(
       [],
@@ -158,7 +174,13 @@ export const idlService = IDL.Service({
   'getBotCombatStatus' : IDL.Func([], [IDL.Opt(BotCombatStatus)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCallerUsername' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
   'getCallersFriends' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getPrincipalForUsername' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(IDL.Principal)],
+      ['query'],
+    ),
   'getShopItem' : IDL.Func([IDL.Nat], [IDL.Opt(ShopItem)], ['query']),
   'getUserAdminPanelEvent' : IDL.Func(
       [IDL.Principal, IDL.Nat],
@@ -168,6 +190,11 @@ export const idlService = IDL.Service({
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'getUsernameForPrincipal' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(IDL.Text)],
       ['query'],
     ),
   'getUsersFriends' : IDL.Func(
@@ -188,9 +215,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'profileExists' : IDL.Func([], [IDL.Bool], ['query']),
   'purchaseAdminPanel' : IDL.Func([], [], []),
   'purchaseShopItem' : IDL.Func([IDL.Nat], [], []),
-  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'rebirth' : IDL.Func([], [], []),
+  'setUsername' : IDL.Func([IDL.Text], [UsernameUpdateResult], []),
   'startBotCombat' : IDL.Func([IDL.Nat], [BotCombatStatus], []),
   'unfollowUser' : IDL.Func([IDL.Principal], [], []),
 });
@@ -223,6 +252,14 @@ export const idlFactory = ({ IDL }) => {
     'botId' : IDL.Nat,
     'playerHealth' : IDL.Nat,
     'playerActiveSurvivor' : Survivor,
+  });
+  const UsernameUpdateResult = IDL.Variant({
+    'alreadyTaken' : IDL.Null,
+    'createdUsername' : IDL.Text,
+    'internalError' : IDL.Text,
+    'invalidLength' : IDL.Null,
+    'success' : IDL.Null,
+    'invalidCharacters' : IDL.Null,
   });
   const AdminPanelEvent = IDL.Record({
     'id' : IDL.Nat,
@@ -305,7 +342,9 @@ export const idlFactory = ({ IDL }) => {
     'speedBonus' : IDL.Int,
   });
   const UserProfile = IDL.Record({
+    'rebirthCount' : IDL.Nat,
     'hasAdminPanel' : IDL.Bool,
+    'username' : IDL.Text,
     'completedQuests' : IDL.Vec(IDL.Nat),
     'storylineProgress' : IDL.Nat,
     'activeDungeonId' : IDL.Opt(IDL.Nat),
@@ -313,13 +352,16 @@ export const idlFactory = ({ IDL }) => {
     'pets' : IDL.Vec(Pet),
     'collectedKeys' : IDL.Vec(IDL.Text),
     'survivors' : IDL.Vec(Survivor),
+    'auraLevel' : IDL.Nat,
     'activeSurvivor' : IDL.Opt(Survivor),
     'currency' : IDL.Nat,
+    'auraPower' : IDL.Nat,
     'equippedArmor' : IDL.Opt(IDL.Nat),
     'killers' : IDL.Vec(Killer),
     'weapons' : IDL.Vec(Weapon),
     'openedCrates' : IDL.Vec(IDL.Nat),
     'equippedWeapon' : IDL.Opt(Weapon),
+    'rebirthMultiplier' : IDL.Nat,
     'equippedPet' : IDL.Opt(Pet),
   });
   
@@ -327,8 +369,11 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'attackBot' : IDL.Func([], [BotCombatStatus], []),
+    'checkUsername' : IDL.Func([IDL.Text], [UsernameUpdateResult], ['query']),
+    'clickAura' : IDL.Func([], [], []),
     'createAdminPanelEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
     'createAnnouncement' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'createPlayerProfile' : IDL.Func([], [], []),
     'followUser' : IDL.Func([IDL.Principal], [], []),
     'getAdminPanelEventsForCaller' : IDL.Func(
         [],
@@ -348,7 +393,13 @@ export const idlFactory = ({ IDL }) => {
     'getBotCombatStatus' : IDL.Func([], [IDL.Opt(BotCombatStatus)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCallerUsername' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
     'getCallersFriends' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getPrincipalForUsername' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(IDL.Principal)],
+        ['query'],
+      ),
     'getShopItem' : IDL.Func([IDL.Nat], [IDL.Opt(ShopItem)], ['query']),
     'getUserAdminPanelEvent' : IDL.Func(
         [IDL.Principal, IDL.Nat],
@@ -358,6 +409,11 @@ export const idlFactory = ({ IDL }) => {
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'getUsernameForPrincipal' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(IDL.Text)],
         ['query'],
       ),
     'getUsersFriends' : IDL.Func(
@@ -382,9 +438,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'profileExists' : IDL.Func([], [IDL.Bool], ['query']),
     'purchaseAdminPanel' : IDL.Func([], [], []),
     'purchaseShopItem' : IDL.Func([IDL.Nat], [], []),
-    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'rebirth' : IDL.Func([], [], []),
+    'setUsername' : IDL.Func([IDL.Text], [UsernameUpdateResult], []),
     'startBotCombat' : IDL.Func([IDL.Nat], [BotCombatStatus], []),
     'unfollowUser' : IDL.Func([IDL.Principal], [], []),
   });

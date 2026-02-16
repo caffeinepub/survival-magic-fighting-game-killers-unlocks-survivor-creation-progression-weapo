@@ -14,11 +14,13 @@ import {
   useGetFollowing,
   useGetFollowers,
   useGetFriends,
+  useGetPrincipalForUsername,
+  useGetUsernamesForPrincipals,
 } from '../hooks/useQueries';
 import { Principal } from '@dfinity/principal';
 
 export function SocialPage() {
-  const [principalInput, setPrincipalInput] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
   const [error, setError] = useState('');
 
   const followMutation = useFollowUser();
@@ -27,41 +29,53 @@ export function SocialPage() {
   const { data: followers, isLoading: followersLoading } = useGetFollowers();
   const { data: friends, isLoading: friendsLoading } = useGetFriends();
 
-  const validatePrincipal = (input: string): Principal | null => {
-    try {
-      return Principal.fromText(input);
-    } catch {
-      return null;
-    }
-  };
+  // Resolve username to principal for follow action
+  const { data: resolvedPrincipal, isLoading: resolvingPrincipal } = useGetPrincipalForUsername(
+    usernameInput.trim() || null
+  );
+
+  // Batch resolve usernames for all lists
+  const allPrincipals = [
+    ...(followers || []),
+    ...(following || []),
+    ...(friends || []),
+  ];
+  const { data: usernameMap } = useGetUsernamesForPrincipals(allPrincipals);
 
   const handleFollow = async () => {
     setError('');
-    const principal = validatePrincipal(principalInput);
-    if (!principal) {
-      setError('Invalid Principal ID format');
+    
+    if (!usernameInput.trim()) {
+      setError('Please enter a username');
       return;
     }
-    await followMutation.mutateAsync(principal.toString());
-    setPrincipalInput('');
+
+    if (!resolvedPrincipal) {
+      setError('Username not found');
+      return;
+    }
+
+    try {
+      await followMutation.mutateAsync(resolvedPrincipal);
+      setUsernameInput('');
+    } catch (err) {
+      // Error already handled by mutation
+    }
   };
 
-  const handleUnfollow = async (principalText: string) => {
-    const principal = validatePrincipal(principalText);
-    if (!principal) return;
-    await unfollowMutation.mutateAsync(principal.toString());
-  };
-
-  const handleUnfollowFromFollowing = async (principalText: string) => {
-    const principal = validatePrincipal(principalText);
-    if (!principal) return;
-    await unfollowMutation.mutateAsync(principal.toString());
+  const handleUnfollow = async (principal: Principal) => {
+    await unfollowMutation.mutateAsync(principal);
   };
 
   const formatPrincipal = (principal: Principal) => {
     const text = principal.toString();
     if (text.length <= 16) return text;
     return `${text.slice(0, 8)}...${text.slice(-8)}`;
+  };
+
+  const getDisplayName = (principal: Principal) => {
+    const username = usernameMap?.get(principal.toString());
+    return username || formatPrincipal(principal);
   };
 
   const isFollowing = (principal: Principal) => {
@@ -88,31 +102,39 @@ export function SocialPage() {
             <UserPlus className="w-5 h-5" />
             Follow a Player
           </CardTitle>
-          <CardDescription>Enter a player's Principal ID to follow them</CardDescription>
+          <CardDescription>Enter a player's username to follow them</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="principal">Principal ID</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="principal"
-              placeholder="e.g., aaaaa-aa..."
-              value={principalInput}
+              id="username"
+              placeholder="e.g., player123"
+              value={usernameInput}
               onChange={(e) => {
-                setPrincipalInput(e.target.value);
+                setUsernameInput(e.target.value);
                 setError('');
               }}
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
+            {usernameInput.trim() && !resolvingPrincipal && !resolvedPrincipal && (
+              <p className="text-sm text-muted-foreground">Username not found</p>
+            )}
           </div>
           <Button
             onClick={handleFollow}
-            disabled={!principalInput.trim() || followMutation.isPending}
+            disabled={!usernameInput.trim() || followMutation.isPending || resolvingPrincipal || !resolvedPrincipal}
             className="w-full"
           >
             {followMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Following...
+              </>
+            ) : resolvingPrincipal ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Looking up...
               </>
             ) : (
               <>
@@ -151,37 +173,46 @@ export function SocialPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {followers.map((follower) => (
-                    <div key={follower.toString()}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-primary" />
+                  {followers.map((follower) => {
+                    const username = usernameMap?.get(follower.toString());
+                    return (
+                      <div key={follower.toString()}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Users className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{username || 'Unknown User'}</p>
+                              {username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(follower)}</p>
+                              )}
+                              {!username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(follower)}</p>
+                              )}
+                              {isFriend(follower) && (
+                                <Badge variant="secondary" className="mt-1">
+                                  <Heart className="w-3 h-3 mr-1" />
+                                  Friend
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-mono text-sm">{formatPrincipal(follower)}</p>
-                            {isFriend(follower) && (
-                              <Badge variant="secondary" className="mt-1">
-                                <Heart className="w-3 h-3 mr-1" />
-                                Friend
-                              </Badge>
-                            )}
-                          </div>
+                          {!isFollowing(follower) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleFollow()}
+                              disabled={followMutation.isPending}
+                            >
+                              Follow Back
+                            </Button>
+                          )}
                         </div>
-                        {!isFollowing(follower) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleFollow()}
-                            disabled={followMutation.isPending}
-                          >
-                            Follow Back
-                          </Button>
-                        )}
+                        <Separator className="mt-3" />
                       </div>
-                      <Separator className="mt-3" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -208,36 +239,45 @@ export function SocialPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {following.map((followee) => (
-                    <div key={followee.toString()}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-primary" />
+                  {following.map((followee) => {
+                    const username = usernameMap?.get(followee.toString());
+                    return (
+                      <div key={followee.toString()}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Users className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{username || 'Unknown User'}</p>
+                              {username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(followee)}</p>
+                              )}
+                              {!username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(followee)}</p>
+                              )}
+                              {isFriend(followee) && (
+                                <Badge variant="secondary" className="mt-1">
+                                  <Heart className="w-3 h-3 mr-1" />
+                                  Friend
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-mono text-sm">{formatPrincipal(followee)}</p>
-                            {isFriend(followee) && (
-                              <Badge variant="secondary" className="mt-1">
-                                <Heart className="w-3 h-3 mr-1" />
-                                Friend
-                              </Badge>
-                            )}
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUnfollow(followee)}
+                            disabled={unfollowMutation.isPending}
+                          >
+                            <UserMinus className="w-4 h-4 mr-2" />
+                            Unfollow
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleUnfollowFromFollowing(followee.toString())}
-                          disabled={unfollowMutation.isPending}
-                        >
-                          <UserMinus className="w-4 h-4 mr-2" />
-                          Unfollow
-                        </Button>
+                        <Separator className="mt-3" />
                       </div>
-                      <Separator className="mt-3" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -275,34 +315,43 @@ export function SocialPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {friends.map((friend) => (
-                    <div key={friend.toString()}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Heart className="w-5 h-5 text-primary" />
+                  {friends.map((friend) => {
+                    const username = usernameMap?.get(friend.toString());
+                    return (
+                      <div key={friend.toString()}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Heart className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{username || 'Unknown User'}</p>
+                              {username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(friend)}</p>
+                              )}
+                              {!username && (
+                                <p className="font-mono text-xs text-muted-foreground">{formatPrincipal(friend)}</p>
+                              )}
+                              <Badge variant="secondary" className="mt-1">
+                                <Heart className="w-3 h-3 mr-1" />
+                                Friend
+                              </Badge>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-mono text-sm">{formatPrincipal(friend)}</p>
-                            <Badge variant="secondary" className="mt-1">
-                              <Heart className="w-3 h-3 mr-1" />
-                              Friend
-                            </Badge>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUnfollow(friend)}
+                            disabled={unfollowMutation.isPending}
+                          >
+                            <UserMinus className="w-4 h-4 mr-2" />
+                            Unfollow
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleUnfollow(friend.toString())}
-                          disabled={unfollowMutation.isPending}
-                        >
-                          <UserMinus className="w-4 h-4 mr-2" />
-                          Unfollow
-                        </Button>
+                        <Separator className="mt-3" />
                       </div>
-                      <Separator className="mt-3" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

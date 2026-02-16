@@ -1,10 +1,10 @@
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Principal "mo:core/Principal";
+import Nat "mo:core/Nat";
 
 module {
-  type Killer = {
+  type OldKiller = {
     id : Nat;
     name : Text;
     description : Text;
@@ -22,7 +22,7 @@ module {
     storyline : ?Text;
   };
 
-  type Survivor = {
+  type OldSurvivor = {
     name : Text;
     level : Nat;
     experience : Nat;
@@ -36,7 +36,7 @@ module {
     };
   };
 
-  type Weapon = {
+  type OldWeapon = {
     name : Text;
     description : Text;
     attackBonus : Int;
@@ -45,7 +45,7 @@ module {
     magicBonus : Int;
   };
 
-  type Pet = {
+  type OldPet = {
     name : Text;
     description : Text;
     experienceBonus : Int;
@@ -53,7 +53,7 @@ module {
     dropRateBonus : Int;
   };
 
-  type Enemy = {
+  type OldEnemy = {
     name : Text;
     health : Nat;
     attack : Nat;
@@ -64,16 +64,16 @@ module {
     expReward : Nat;
   };
 
-  type Dungeon = {
+  type OldDungeon = {
     id : Nat;
     name : Text;
     description : Text;
     difficulty : Nat;
-    quests : [Quest];
-    availableCrates : [Crate];
+    quests : [OldQuest];
+    availableCrates : [OldCrate];
   };
 
-  type Quest = {
+  type OldQuest = {
     id : Nat;
     name : Text;
     description : Text;
@@ -81,7 +81,7 @@ module {
     rewardCurrency : Nat;
   };
 
-  type Crate = {
+  type OldCrate = {
     id : Nat;
     name : Text;
     description : Text;
@@ -90,16 +90,16 @@ module {
     reward : Nat;
   };
 
-  type PlayerProfile = {
+  type OldPlayerProfile = {
     currency : Nat;
     hasAdminPanel : Bool;
-    killers : [Killer];
-    survivors : [Survivor];
-    weapons : [Weapon];
-    pets : [Pet];
-    activeSurvivor : ?Survivor;
-    equippedWeapon : ?Weapon;
-    equippedPet : ?Pet;
+    killers : [OldKiller];
+    survivors : [OldSurvivor];
+    weapons : [OldWeapon];
+    pets : [OldPet];
+    activeSurvivor : ?OldSurvivor;
+    equippedWeapon : ?OldWeapon;
+    equippedPet : ?OldPet;
     storylineProgress : Nat;
     equippedArmor : ?Nat;
     activeDungeonId : ?Nat;
@@ -107,36 +107,40 @@ module {
     inventory : [Text];
     collectedKeys : [Text];
     openedCrates : [Nat];
+    auraPower : Nat;
+    auraLevel : Nat;
+    rebirthCount : Nat;
+    rebirthMultiplier : Nat;
   };
 
-  type CombatStatus = {
+  type OldCombatStatus = {
     enemyName : Text;
     enemyHealth : Nat;
     playerHealth : Nat;
-    playerActiveSurvivor : Survivor;
+    playerActiveSurvivor : OldSurvivor;
     combatOngoing : Bool;
   };
 
-  type CombatResult = {
-    winner : Winner;
+  type OldCombatResult = {
+    winner : OldWinner;
     rewardCurrency : Nat;
     rewardExp : Nat;
   };
 
-  type CombatDetails = {
-    playerStats : Survivor;
-    enemyStats : Enemy;
+  type OldCombatDetails = {
+    playerStats : OldSurvivor;
+    enemyStats : OldEnemy;
     playerHealth : Nat;
     enemyHealth : Nat;
     rewardedCurrency : Nat;
     rewardedExp : Nat;
-    status : CombatStatus;
-    result : ?CombatResult;
+    status : OldCombatStatus;
+    result : ?OldCombatResult;
   };
 
-  type UserProfile = PlayerProfile;
+  type OldUserProfile = OldPlayerProfile;
 
-  type Clan = {
+  type OldClan = {
     id : Nat;
     name : Text;
     founder : Principal;
@@ -145,7 +149,7 @@ module {
     createdAt : Nat;
   };
 
-  type WhyDontYouJoin = {
+  type OldWhyDontYouJoin = {
     id : Nat;
     leader : Principal;
     name : Text;
@@ -156,18 +160,18 @@ module {
     memberCount : Nat;
   };
 
-  type ClanMarketplaceItem = {
+  type OldClanMarketplaceItem = {
     id : Nat;
     clanReference : Nat;
     whyDontYouJoinId : Nat;
   };
 
-  type Winner = {
+  type OldWinner = {
     #player;
     #enemy;
   };
 
-  type AttackResult = {
+  type OldAttackResult = {
     enemyAttack : Nat;
     playerAttack : Nat;
     playerCritical : Bool;
@@ -177,7 +181,7 @@ module {
     enemyAlive : Bool;
   };
 
-  type AdminPanelEvent = {
+  type OldAdminPanelEvent = {
     id : Nat;
     creator : Principal;
     eventName : Text;
@@ -185,26 +189,16 @@ module {
     timestamp : Nat;
   };
 
-  type OldActor = {
-    adminPanelEvents : Map.Map<Principal, Map.Map<Nat, AdminPanelEvent>>;
-    playerProfiles : Map.Map<Principal, PlayerProfile>;
-    combatStatus : Map.Map<Principal, CombatStatus>;
-    whyDontYouJoins : Map.Map<Nat, WhyDontYouJoin>;
-    clans : Map.Map<Nat, Clan>;
-    dungeons : Map.Map<Nat, Dungeon>;
-    followers : Map.Map<Principal, Map.Map<Principal, ()>>;
-  };
-
-  type ShopItem = {
+  type OldShopItem = {
     id : Nat;
     name : Text;
     description : Text;
     price : Nat;
-    itemType : ItemType;
-    bonusStat : ?Stat;
+    itemType : OldItemType;
+    bonusStat : ?OldStat;
   };
 
-  type ItemType = {
+  type OldItemType = {
     #weapon;
     #armor;
     #pet;
@@ -213,7 +207,7 @@ module {
     #misc;
   };
 
-  type Stat = {
+  type OldStat = {
     #attack : Nat;
     #defense : Nat;
     #speed : Nat;
@@ -223,7 +217,7 @@ module {
     #level : Nat;
   };
 
-  type Bot = {
+  type OldBot = {
     id : Nat;
     name : Text;
     url : Text;
@@ -233,30 +227,16 @@ module {
     rewardExp : Nat;
   };
 
-  type BotCombatStatus = {
+  type OldBotCombatStatus = {
     botId : Nat;
     botName : Text;
     botHealth : Nat;
     playerHealth : Nat;
-    playerActiveSurvivor : Survivor;
+    playerActiveSurvivor : OldSurvivor;
     combatOngoing : Bool;
   };
 
-  type NewActor = {
-    adminPanelEvents : Map.Map<Principal, Map.Map<Nat, AdminPanelEvent>>;
-    playerProfiles : Map.Map<Principal, PlayerProfile>;
-    combatStatus : Map.Map<Principal, CombatStatus>;
-    whyDontYouJoins : Map.Map<Nat, WhyDontYouJoin>;
-    clans : Map.Map<Nat, Clan>;
-    dungeons : Map.Map<Nat, Dungeon>;
-    followers : Map.Map<Principal, Map.Map<Principal, ()>>;
-    bots : Map.Map<Nat, Bot>;
-    botCombatStatus : Map.Map<Principal, BotCombatStatus>;
-    announcements : Map.Map<Nat, Announcement>;
-    shopItems : Map.Map<Nat, ShopItem>;
-  };
-
-  public type Announcement = {
+  type OldAnnouncement = {
     id : Nat;
     title : Text;
     message : Text;
@@ -264,60 +244,143 @@ module {
     timestamp : Nat;
   };
 
-  // Migration function replacing old actor by new actor
+  type OldActor = {
+    adminPanelEvents : Map.Map<Principal, Map.Map<Nat, OldAdminPanelEvent>>;
+    playerProfiles : Map.Map<Principal, OldPlayerProfile>;
+    combatStatus : Map.Map<Principal, OldCombatStatus>;
+    whyDontYouJoins : Map.Map<Nat, OldWhyDontYouJoin>;
+    clans : Map.Map<Nat, OldClan>;
+    dungeons : Map.Map<Nat, OldDungeon>;
+    followers : Map.Map<Principal, Map.Map<Principal, ()>>;
+    bots : Map.Map<Nat, OldBot>;
+    botCombatStatus : Map.Map<Principal, OldBotCombatStatus>;
+    announcements : Map.Map<Nat, OldAnnouncement>;
+    shopItems : Map.Map<Nat, OldShopItem>;
+    currencyConversionRate : Nat;
+    adminPanelCost : Nat;
+    adminPanelConstant : Nat;
+  };
+
+  type NewKiller = OldKiller;
+  type NewSurvivor = OldSurvivor;
+  type NewWeapon = OldWeapon;
+  type NewPet = OldPet;
+  type NewEnemy = OldEnemy;
+  type NewDungeon = OldDungeon;
+  type NewQuest = OldQuest;
+  type NewCrate = OldCrate;
+
+  type NewPlayerProfile = {
+    username : Text;
+    currency : Nat;
+    hasAdminPanel : Bool;
+    killers : [NewKiller];
+    survivors : [NewSurvivor];
+    weapons : [NewWeapon];
+    pets : [NewPet];
+    activeSurvivor : ?NewSurvivor;
+    equippedWeapon : ?NewWeapon;
+    equippedPet : ?NewPet;
+    storylineProgress : Nat;
+    equippedArmor : ?Nat;
+    activeDungeonId : ?Nat;
+    completedQuests : [Nat];
+    inventory : [Text];
+    collectedKeys : [Text];
+    openedCrates : [Nat];
+    auraPower : Nat;
+    auraLevel : Nat;
+    rebirthCount : Nat;
+    rebirthMultiplier : Nat;
+  };
+
+  type NewCombatStatus = OldCombatStatus;
+  type NewCombatResult = OldCombatResult;
+  type NewCombatDetails = OldCombatDetails;
+  type NewUserProfile = NewPlayerProfile;
+
+  type NewClan = OldClan;
+  type NewWhyDontYouJoin = {
+    id : Nat;
+    leader : Principal;
+    name : Text;
+    active : Bool;
+    description : Text;
+    imageUrl : Text;
+    memberCount : Nat;
+  };
+  type NewClanMarketplaceItem = OldClanMarketplaceItem;
+  type NewWinner = OldWinner;
+  type NewAttackResult = OldAttackResult;
+  type NewAdminPanelEvent = OldAdminPanelEvent;
+  type NewShopItem = OldShopItem;
+  type NewItemType = OldItemType;
+  type NewStat = OldStat;
+  type NewBot = OldBot;
+  type NewBotCombatStatus = OldBotCombatStatus;
+  type NewAnnouncement = OldAnnouncement;
+
+  type NewActor = {
+    adminPanelEvents : Map.Map<Principal, Map.Map<Nat, NewAdminPanelEvent>>;
+    playerProfiles : Map.Map<Principal, NewPlayerProfile>;
+    combatStatus : Map.Map<Principal, NewCombatStatus>;
+    whyDontYouJoins : Map.Map<Nat, NewWhyDontYouJoin>;
+    clans : Map.Map<Nat, NewClan>;
+    dungeons : Map.Map<Nat, NewDungeon>;
+    followers : Map.Map<Principal, Map.Map<Principal, ()>>;
+    bots : Map.Map<Nat, NewBot>;
+    botCombatStatus : Map.Map<Principal, NewBotCombatStatus>;
+    announcements : Map.Map<Nat, NewAnnouncement>;
+    shopItems : Map.Map<Nat, NewShopItem>;
+    currencyConversionRate : Nat;
+    adminPanelCost : Nat;
+    adminPanelConstant : Nat;
+    usernames : Map.Map<Text, Principal>;
+  };
+
   public func run(old : OldActor) : NewActor {
-    // Initialize the bots map with sample bots
-    let bots = Map.empty<Nat, Bot>();
-
-    bots.add(
-      1,
-      {
-        id = 1;
-        name = "The Shyamnator";
-        url = "https://shyamcore.app/images/shyamnator.png";
-        description = "A speedy, legendary cyborg that spins 62,000 times per second. Ranked #1 in physics simulation races and speed in the Shyamcore Multiverse.";
-        difficulty = 10;
-        rewardCurrency = 250_000_000;
-        rewardExp = 100_000;
-      },
+    let newPlayerProfiles = old.playerProfiles.map<Principal, OldPlayerProfile, NewPlayerProfile>(
+      func(_id, oldProfile) {
+        { oldProfile with username = "" };
+      }
     );
-
-    bots.add(
-      2,
-      {
-        id = 2;
-        name = "The WesleyCore";
-        url = "https://shyamcore.app/images/wesleycore.png";
-        description = "Developed by Wesley Hardcore, this bot is known for its immense strength and stamina. Built for endurance races and is exceptionally strong.";
-        difficulty = 12;
-        rewardCurrency = 350_000_000;
-        rewardExp = 150_000;
-      },
+    let newAdminPanelEvents = old.adminPanelEvents.map<Principal, Map.Map<Nat, OldAdminPanelEvent>, Map.Map<Nat, NewAdminPanelEvent>>(
+      func(_id, events) { events }
     );
-
-    bots.add(
-      3,
-      {
-        id = 3;
-        name = "AdminDestroyer";
-        url = "https://shyamcore.app/images/admindestroyer.png";
-        description = "A cold, calculating cyborg created to protect administrators. Developed using AI technology based on the Mountain Admin Core Foundation.";
-        difficulty = 20;
-        rewardCurrency = 1_000_000_000;
-        rewardExp = 1_000_000;
-      },
+    let newWhyDontYouJoins = old.whyDontYouJoins.map<Nat, OldWhyDontYouJoin, NewWhyDontYouJoin>(
+      func(_id, oldWhyDontYouJoin) {
+        {
+          oldWhyDontYouJoin with
+          description = oldWhyDontYouJoin.description;
+          imageUrl = oldWhyDontYouJoin.imageUrl;
+        };
+      }
     );
-
-    let announcements = Map.empty<Nat, Announcement>();
-    let shopItems = Map.empty<Nat, ShopItem>();
-    let botCombatStatus = Map.empty<Principal, BotCombatStatus>();
-
-    {
-      old with
-      bots;
-      botCombatStatus;
-      announcements;
-      shopItems;
+    let newClans = old.clans.map<Nat, OldClan, NewClan>(
+      func(_id, clan) { clan }
+    );
+    let newDungeons = old.dungeons.map<Nat, OldDungeon, NewDungeon>(
+      func(_id, dungeon) { dungeon }
+    );
+    let newBots = old.bots.map<Nat, OldBot, NewBot>(
+      func(_id, bot) { bot }
+    );
+    let newAnnouncements = old.announcements.map<Nat, OldAnnouncement, NewAnnouncement>(
+      func(_id, announcement) { announcement }
+    );
+    let newShopItems = old.shopItems.map<Nat, OldShopItem, NewShopItem>(
+      func(_id, shopItem) { shopItem }
+    );
+    { old with
+      playerProfiles = newPlayerProfiles;
+      adminPanelEvents = newAdminPanelEvents;
+      whyDontYouJoins = newWhyDontYouJoins;
+      clans = newClans;
+      dungeons = newDungeons;
+      bots = newBots;
+      announcements = newAnnouncements;
+      shopItems = newShopItems;
+      usernames = Map.empty<Text, Principal>();
     };
   };
 };

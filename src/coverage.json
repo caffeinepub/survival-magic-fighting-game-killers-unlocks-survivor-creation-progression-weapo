@@ -1,82 +1,89 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T19:29:36.533Z",
+  "generatedAt": "2026-02-16T15:54:33.506Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 8,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-42",
-        "summary": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
+        "id": "REQ-58",
+        "summary": "Extend the backend `PlayerProfile` model to persist a user-facing `username` string for each authenticated player, and enforce that usernames are unique across all players while still using `Principal` as the internal identifier.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-59",
+        "summary": "Update backend profile creation to require a username at creation time (or provide a dedicated username-setting method invoked immediately after creation), with validation and clear English errors (e.g., empty username, invalid characters, too short/too long, already taken).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-60",
+        "summary": "Add backend query method(s) to resolve usernames for principals and to resolve a principal by username, so the frontend can display usernames in social lists and allow following users by username.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-61",
+        "summary": "If adding `username` to `PlayerProfile` is not backward-compatible with existing stable state, add a conditional state migration that safely upgrades existing stored profiles by assigning a default username and building any needed username index, without breaking upgrades.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-62",
+        "summary": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/GameplayPage.tsx"
+          "frontend/src/components/ProfileSetupDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/GameplayPage.tsx"
+          "frontend/src/components/ProfileSetupDialog.tsx"
         ]
       },
       {
-        "id": "REQ-43",
-        "summary": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
+        "id": "REQ-63",
+        "summary": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ShopPage.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ShopPage.tsx"
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
-        "id": "REQ-44",
-        "summary": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/AnnouncementsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/GameLayout.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AnnouncementsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/GameLayout.tsx"
-        ]
-      },
-      {
-        "id": "REQ-45",
-        "summary": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
+        "id": "REQ-64",
+        "summary": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/AnnouncementsPage.tsx"
+          "frontend/src/pages/SocialPage.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/AnnouncementsPage.tsx"
+          "frontend/src/pages/SocialPage.tsx"
         ]
       },
       {
-        "id": "REQ-46",
-        "summary": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
+        "id": "REQ-65",
+        "summary": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/HomePage.tsx",
           "frontend/src/components/GameLayout.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/components/ProfileSetupDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/HomePage.tsx",
           "frontend/src/components/GameLayout.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/components/ProfileSetupDialog.tsx"
         ]
       }
     ]
@@ -88,18 +95,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
     "frontend/src/components/GameLayout.tsx",
+    "frontend/src/components/ProfileSetupDialog.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/AnnouncementsPage.tsx",
-    "frontend/src/pages/GameplayPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/ShopPage.tsx",
     "frontend/src/pages/SocialPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

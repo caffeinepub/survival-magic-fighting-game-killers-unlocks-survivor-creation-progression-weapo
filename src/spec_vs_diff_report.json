@@ -1,56 +1,81 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T19:29:36.529Z",
-  "summary": "Diff adds a new Announcements page and wires it into App/GameLayout navigation; adds bot-combat UI/hooks in GameplayPage; expands ShopPage UI to render additional shop items; and introduces a backend migration module plus backend state placeholders for bots. However, several backend-side APIs and persistence details required by REQ-42/43/45 are not clearly evidenced in the truncated backend diff summary.",
+  "generatedAt": "2026-02-16T15:54:33.502Z",
+  "summary": "Diff implements username UI in profile setup and social page, adds a `username` field to the backend `PlayerProfile`, introduces a `usernames` index map, and wires in a migration hook. However, the diff summary does not provide enough evidence that backend username validation/uniqueness enforcement, username resolution query methods, or deterministic default-username migration behavior are fully implemented. Some unrelated UI/navigation changes (e.g., Aura page/nav) also appear.",
   "missing_requirements": [
     {
-      "id": "REQ-42",
-      "requirement": "Backend exposes APIs to list available AI bots (id, name, combat stats/rewards) and to start/fight a bot using the existing combat flow, with eligibility checks and victory rewards persisted to the caller profile.",
-      "reason": "Frontend references hooks for bot listing/combat, and backend/main.mo shows bot-related maps, but the diff summary does not show the actual public canister methods (query for bots, start bot combat, attack flow) nor the reward persistence logic/eligibility enforcement in backend/main.mo due to truncation.",
+      "id": "REQ-58",
+      "requirement": "Enforce that usernames are unique across all players and reject creating/updating a username if already taken, returning a clear English error message.",
+      "reason": "The diff shows a new `usernames` map and a `username` field, but does not show any backend logic that checks the index and rejects duplicates with an English error message.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/pages/GameplayPage.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-43",
-      "requirement": "Backend provides a query to list shop items (stable ids, English name/description, price, type/effect) and a purchase method that validates profile and sufficient currency, subtracts currency, grants effect, and persists it.",
-      "reason": "Shop UI and hooks were added/updated to fetch and purchase shop items, and migration.mo defines a ShopItem type, but the diff summary does not show the backend public query/method implementations or the logic that applies item effects and persists profile changes.",
-      "evidence": [
-        "frontend/src/pages/ShopPage.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "backend/migration.mo",
         "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-45",
-      "requirement": "Persist and serve announcements from the backend, with an Announcement model stored persistently; provide a list announcements query for authenticated users; provide a create announcement method restricted to hasAdminPanel=true with clear error for others.",
-      "reason": "Frontend AnnouncementsPage and routing were added, but the diff summary does not show any backend Announcement type, stable storage, or the restricted create/list public methods in backend/main.mo (not visible in the truncated excerpt).",
+      "id": "REQ-59",
+      "requirement": "Require a username at profile creation time (or via a dedicated username-setting method invoked immediately after creation) with validation (empty/invalid chars/length/already taken) and clear English errors.",
+      "reason": "Frontend uses a two-step flow (create profile then set username), but the diff summary does not include the backend `setUsername` implementation nor any shown validation rules/error strings. Frontend-side hints are not sufficient to prove backend enforcement.",
       "evidence": [
-        "frontend/src/pages/AnnouncementsPage.tsx",
-        "frontend/src/hooks/useQueries.ts",
+        "backend/main.mo",
+        "frontend/src/components/ProfileSetupDialog.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-60",
+      "requirement": "Expose backend query method(s) to resolve username for principal(s) and resolve principal by username, with English not-found/errors.",
+      "reason": "Frontend adds hooks that call `getPrincipalForUsername` and batch username resolution, but the backend diff snippet does not show these query methods or their error behavior.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/pages/SocialPage.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-61",
+      "requirement": "If needed, add a conditional migration that assigns deterministic default usernames for existing profiles and builds any needed username index without trapping on upgrade.",
+      "reason": "A migration hook and `backend/migration.mo` are added, but the diff content shown is truncated and does not evidence assigning deterministic unique default usernames or rebuilding the username index for existing profiles.",
+      "evidence": [
         "backend/main.mo",
         "backend/migration.mo"
       ]
+    },
+    {
+      "id": "REQ-65",
+      "requirement": "Update other prominent UI surfaces that present 'Principal ID' as the player identity to display username instead, keeping Principal ID secondary where appropriate.",
+      "reason": "Only `GameLayout` header badge and the profile setup/social page changes are evidenced. The diff summary does not demonstrate updates across other prominent identity surfaces (e.g., other headers/cards/profile summaries) beyond those files.",
+      "evidence": [
+        "frontend/src/components/GameLayout.tsx",
+        "frontend-file-summaries.txt"
+      ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.56,
+  "hallucinated_features": [
+    {
+      "description": "Added/featured an 'Aura' page/navigation item and related UI/icon usage.",
+      "reason": "Aura-related navigation and page-type union are not part of the username/principal-display BuildRequest requirements.",
+      "evidence": [
+        "frontend/src/components/GameLayout.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Large unrelated gameplay/UI feature descriptions (killers unlock list changes, dungeon features, etc.) included in the frontend summaries file.",
+      "reason": "These features are not requested by the BuildRequest (which is scoped to username/principal display and lookup). The only direct evidence is the documentation/summary content, not necessarily code changes, but it is still an unrequested addition in the diff.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.66,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
     "frontend/src/components/GameLayout.tsx",
+    "frontend/src/components/ProfileSetupDialog.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/AnnouncementsPage.tsx",
-    "frontend/src/pages/GameplayPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/ShopPage.tsx",
     "frontend/src/pages/SocialPage.tsx",
     "project_state.json"
   ]

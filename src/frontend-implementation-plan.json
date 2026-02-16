@@ -1,127 +1,80 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "AI Bot PvE, Expanded Shop Items, and Announcements Page",
+  "title": "Usernames-first UI (profile setup + social) with principal as secondary",
   "requirements": [
     {
-      "id": "REQ-42",
-      "summary": "Add AI bot PvE option in the Combat Arena UI using existing combat flow patterns and React Query/toast conventions.",
+      "id": "REQ-62",
+      "summary": "Collect username during profile setup and demote Principal ID to secondary/copy-only info",
       "acceptanceCriteria": [
-        "Backend exposes a query to list AI bots (id, name, and combat stats/rewards) for the frontend to display.",
-        "Backend exposes a method to start a bot fight and returns the same kind of combat details used by the current combat UI (so existing battle rendering can be reused).",
-        "Bot fights use the same eligibility requirements as existing combat (authenticated user with an active survivor).",
-        "Winning a bot fight grants currency/EXP rewards to the caller and persists them in the caller’s profile.",
-        "Frontend adds a new section/tab in the Combat Arena UI to browse AI bots and start a bot fight.",
-        "Frontend uses React Query hooks and the existing toast success/error pattern for bot listing and bot fight actions, and invalidates/refetches currentUserProfile after fights that change rewards."
+        "The primary labeled field on the profile setup screen is `Username` (not `Your Principal ID`).",
+        "The user can enter a username and submit profile creation; validation failures show clear English messages/toasts.",
+        "Principal ID is not the primary identifier on this screen; it is optional/secondary and still copyable when the identity is available."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProfileSetupDialog.tsx",
+          "operation": "modify",
+          "description": "Update the dialog UI to add a primary Username input (English label + helper text), submit using the updated create profile flow, and move Principal ID into a secondary/advanced section with the existing copy button. Ensure submit is disabled appropriately while identity is unavailable or mutation is pending. Use the selected \"authorization\" component guidance for user profile setup UX (avoid making principal the primary identifier). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-63",
+      "summary": "Pass username through the create profile React Query flow and preserve toast + refetch behavior",
+      "acceptanceCriteria": [
+        "Creating a profile from the UI sends the username to the backend successfully.",
+        "If the backend returns a username validation/uniqueness error, the user sees an English toast message and the button re-enables properly.",
+        "On success, `['currentUserProfile']` is invalidated/refetched and the app transitions out of the profile setup flow as before."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add React Query hooks for bot PvE: list bots, start bot combat, fetch current bot combat status, and perform bot attacks. Use the existing toast success/error pattern and invalidate/refetch ['currentUserProfile'] after fight completion rewards. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/GameplayPage.tsx",
-          "operation": "modify",
-          "description": "Extend Combat Arena UI to include a new tab/section for AI Bots: render the bot list, allow starting a bot fight, and run bot attacks using the same combat rendering area/pattern as current fights. Ensure eligibility messaging remains English and requires an active survivor. Verify the component's usage instructions before implementing."
+          "description": "Update `useCreatePlayerProfile` to accept a `username` parameter and perform the updated backend flow (e.g., create profile then set username, or a single updated create call if the backend signature changes). Map backend username validation/uniqueness results (e.g., invalid length/characters, already taken, internal error) into clear English toasts, and keep the existing success toast and `['currentUserProfile']` invalidate/refetch pattern. Use the selected \"authorization\" component's frontend guidance for profile setup flow behavior. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-43",
-      "summary": "Expand Shop page to display additional purchasable items and enable purchases with in-game currency while keeping the Admin Panel card unchanged.",
+      "id": "REQ-64",
+      "summary": "Switch Social page follow/unfollow input and lists to be username-first with principal fallback",
       "acceptanceCriteria": [
-        "Backend provides a query to list shop items (stable ids, English name/description, price, and a clear item type/effect).",
-        "Backend provides a purchase method that validates the caller has a profile and sufficient currency, subtracts currency, and grants the item effect to the caller (e.g., adds to inventory/collectedKeys/weapons/pets as appropriate).",
-        "Shop purchases are persisted in the caller’s profile and are reflected on next profile fetch.",
-        "Frontend Shop page shows the Admin Panel card unchanged (still costs 1,000,000,000) and additionally renders the new shop items with price, affordability state, and a purchase button.",
-        "On successful purchase, the UI shows a success toast and refreshes the cached currentUserProfile; on failure, it shows the backend error via the existing toast pattern."
+        "The Social page no longer asks for a 'Principal ID' as the primary input; it asks for a 'Username' with English helper text.",
+        "Following/unfollowing works via username input (the app resolves username to principal via backend method(s) and then performs follow/unfollow using existing backend logic).",
+        "Followers/Following/Friends lists display usernames when available; if a username cannot be resolved, the UI falls back to a shortened principal string.",
+        "All user-facing messages on this page remain English (including validation errors)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add React Query hooks to fetch shop items and purchase a shop item. Ensure success shows a success toast and invalidates/refetches ['currentUserProfile']; failures display backend errors via the existing toast pattern. Verify the component's usage instructions before implementing."
+          "description": "Add React Query helpers needed by SocialPage for username-based social UX: (1) a mutation/query to resolve a Principal from a username (using the backend capability), (2) a query to resolve usernames for lists of principals (with caching; fall back when not found), and (3) optionally a wrapper mutation to follow/unfollow by username that composes resolve + existing follow/unfollow mutations. Ensure all surfaced errors are clear English. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/ShopPage.tsx",
+          "path": "frontend/src/pages/SocialPage.tsx",
           "operation": "modify",
-          "description": "Update Shop UI to keep the existing Admin Panel card unchanged and add a new section that lists backend-provided shop items with name/description/price, an affordability state based on current currency, and a purchase button wired to the new purchase hook. Verify the component's usage instructions before implementing."
+          "description": "Replace Principal-ID input with a Username input and English helper text. On submit, resolve username -> principal via the backend capability and then follow/unfollow using the existing follow/unfollow logic. Update followers/following/friends list rendering to show resolved usernames as the primary line, with shortened principal as secondary detail/fallback. Keep validation and user-facing messages in English."
         }
       ]
     },
     {
-      "id": "REQ-44",
-      "summary": "Add an Announcements page reachable from main navigation for authenticated users and render a scrollable list of announcements in English.",
+      "id": "REQ-65",
+      "summary": "Replace other prominent 'Principal ID' identity displays with username-first UI while keeping principal accessible secondarily",
       "acceptanceCriteria": [
-        "A new page component (e.g., `AnnouncementsPage.tsx`) exists and renders a scrollable list of announcement entries using the existing UI card components styling pattern.",
-        "The app-level page union/routing state in `frontend/src/App.tsx` is extended to include the new announcements page id and renders the new page when selected.",
-        "`frontend/src/components/GameLayout.tsx` navigation includes a new \"Announcements\" item that navigates to the announcements page for authenticated users.",
-        "Any user-facing text on the Announcements page is in English."
+        "No primary, user-facing identity label in the app shows 'Principal ID' where 'Username' is intended as the main identifier.",
+        "The app still functions with Internet Identity and principals internally; changes are limited to display and username-based lookup UX.",
+        "Principal ID remains accessible where needed (secondary display/copy) and does not break existing flows."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/pages/AnnouncementsPage.tsx",
-          "operation": "create",
-          "description": "Create Announcements page that displays a scrollable list of announcement cards (title, date, body text) using existing UI components and English copy. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Extend the App-level Page union/state to include an 'announcements' page id and render AnnouncementsPage when selected (wiring it into the existing in-app navigation flow). Verify the component's usage instructions before implementing."
-        },
         {
           "path": "frontend/src/components/GameLayout.tsx",
           "operation": "modify",
-          "description": "Add an 'Announcements' navigation item (authenticated in-app navigation) that routes to the new announcements page id, following the existing navigation item pattern and keeping English labels. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-45",
-      "summary": "Wire announcements list + admin-only creation UI using React Query hooks with toast pattern and cache invalidation.",
-      "acceptanceCriteria": [
-        "Backend defines an Announcement model (id, title, body, timestamp) and stores announcements persistently.",
-        "Backend exposes a public query method to list announcements for authenticated users.",
-        "Backend exposes a create announcement method restricted to callers who have `hasAdminPanel = true`, rejecting others with a clear error message.",
-        "Frontend adds React Query hooks in `frontend/src/hooks/useQueries.ts` to list announcements and create an announcement using the existing toast success/error pattern and appropriate cache invalidation.",
-        "Frontend adds an Announcements creation UI for Admin Panel owners (either as a new Admin Panel tab or a clearly marked admin-only section) that submits title/body and then refreshes the announcements list."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add React Query hooks for announcements: list announcements and create announcement. Use the existing toast success/error pattern; on create success invalidate/refetch the announcements list query; on failure show backend error. Verify the component's usage instructions before implementing."
+          "description": "Add a small username-first identity display in the header (e.g., show `profile.username` when available) to reinforce usernames as the primary identity, without exposing Principal ID as the main label. Keep any principal usage internal/secondary if added. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/AnnouncementsPage.tsx",
+          "path": "frontend/src/components/ProfileSetupDialog.tsx",
           "operation": "modify",
-          "description": "Add an admin-only announcement creation section visible only when currentUserProfile.hasAdminPanel is true, with title/body inputs and a submit button wired to the create announcement hook; refresh the list via query invalidation and keep all UI copy in English. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-46",
-      "summary": "Update local frontend Page unions/types to include the new Announcements page and avoid TypeScript errors as navigation expands.",
-      "acceptanceCriteria": [
-        "The frontend TypeScript build succeeds with no Page-union type errors after adding the new Announcements page and any new combat/shop navigation.",
-        "Home page navigation callbacks remain functional and type-safe after the page set expands."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Update the local Page type union used by HomePage navigation callbacks to remain compatible with the expanded app navigation (including announcements and other existing pages) and prevent TypeScript type errors. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/GameLayout.tsx",
-          "operation": "modify",
-          "description": "Keep the GameLayout Page type union aligned with App-level navigation (including announcements) to avoid TypeScript mismatch across navigation helpers. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Ensure the App-level Page union is the single source for page ids (including announcements) and that all page render branches remain type-safe. Verify the component's usage instructions before implementing."
+          "description": "Ensure any remaining prominent references to 'Principal ID' are demoted to secondary/advanced copy-only context (labels and helper text remain English), aligning the overall identity presentation with username-first UX."
         }
       ]
     }

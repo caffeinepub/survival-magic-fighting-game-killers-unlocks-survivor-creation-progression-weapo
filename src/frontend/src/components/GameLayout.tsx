@@ -2,10 +2,10 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Coins, Home, Users, Sword, Package, Skull, ShoppingCart, Settings, UsersRound, Map, Megaphone, UserPlus, Bell } from 'lucide-react';
+import { Coins, Home, Users, Sword, Package, Skull, ShoppingCart, Settings, UsersRound, Map, Megaphone, UserPlus, Bell, Sparkles, User } from 'lucide-react';
 import { SiX, SiFacebook, SiLinkedin, SiInstagram, SiGithub } from 'react-icons/si';
 
-type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social' | 'announcements';
+type Page = 'home' | 'survivors' | 'gameplay' | 'inventory' | 'killers' | 'shop' | 'admin' | 'clans' | 'dungeons' | 'updates' | 'social' | 'announcements' | 'aura';
 
 interface GameLayoutProps {
   children: React.ReactNode;
@@ -35,6 +35,7 @@ export function GameLayout({ children, currentPage, onNavigate }: GameLayoutProp
     { id: 'killers' as Page, label: 'Killers', icon: Skull },
     { id: 'dungeons' as Page, label: 'Dungeons', icon: Map },
     { id: 'clans' as Page, label: 'Clans', icon: UsersRound },
+    { id: 'aura' as Page, label: 'Aura', icon: Sparkles },
     { id: 'shop' as Page, label: 'Shop', icon: ShoppingCart },
     { id: 'updates' as Page, label: 'Updates', icon: Megaphone },
     { id: 'social' as Page, label: 'Social', icon: UserPlus },
@@ -55,6 +56,12 @@ export function GameLayout({ children, currentPage, onNavigate }: GameLayoutProp
               <h1 className="text-2xl font-bold text-primary">Arcane Survival</h1>
             </div>
             <div className="flex items-center gap-4">
+              {profile?.username && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full border border-border">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{profile.username}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
                 <Coins className="w-5 h-5 text-primary" />
                 <span className="font-semibold">{formatCurrency(profile?.currency || 0n)}</span>

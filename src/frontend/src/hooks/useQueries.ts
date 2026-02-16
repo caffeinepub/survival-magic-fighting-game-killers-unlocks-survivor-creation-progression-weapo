@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, Survivor, Weapon, Pet, AdminPanelEvent, Bot, BotCombatStatus, Announcement, ShopItem } from '../backend';
+import type { UserProfile, Survivor, Weapon, Pet, AdminPanelEvent, Bot, BotCombatStatus, Announcement, ShopItem, UsernameUpdateResult } from '../backend';
 import { toast } from 'sonner';
 import { Principal } from '@dfinity/principal';
 
@@ -38,17 +38,142 @@ export function useCreatePlayerProfile() {
 
   return useMutation({
     mutationFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      // @ts-ignore - Method exists in actual backend but not in interface
+      if (!actor) {
+        throw new Error('Connection not available. Please try again.');
+      }
+      
+      if (typeof actor.createPlayerProfile !== 'function') {
+        throw new Error('Profile creation is not available. Please refresh the page.');
+      }
+
       return actor.createPlayerProfile();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      toast.success('Profile created successfully!');
+    onSuccess: async () => {
+      // Don't show success toast here - wait for username to be set
+      await queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create profile');
+      const errorMessage = error.message || 'Failed to create profile';
+      
+      // Handle specific error cases with user-friendly messages
+      if (errorMessage.includes('already exists')) {
+        toast.error('Profile already exists for your account');
+      } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('not authenticated')) {
+        toast.error('You must be logged in to create a profile');
+      } else if (errorMessage.includes('not available')) {
+        toast.error('Connection not available. Please try again.');
+      } else {
+        toast.error(errorMessage);
+      }
     },
+  });
+}
+
+export function useSetUsername() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (username: string) => {
+      if (!actor) {
+        throw new Error('Connection not available. Please try again.');
+      }
+      
+      if (typeof actor.setUsername !== 'function') {
+        throw new Error('Username setup is not available. Please refresh the page.');
+      }
+
+      return actor.setUsername(username);
+    },
+    onSuccess: async (result: UsernameUpdateResult) => {
+      // Invalidate and refetch to ensure the app transitions away from profile setup
+      await queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      await queryClient.refetchQueries({ queryKey: ['currentUserProfile'] });
+      
+      if (result.__kind__ === 'createdUsername') {
+        toast.success(`Profile created! Welcome, ${result.createdUsername}!`);
+      } else if (result.__kind__ === 'success') {
+        toast.success('Username set successfully!');
+      }
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message || 'Failed to set username';
+      
+      // Map backend errors to user-friendly messages
+      if (errorMessage.includes('Invalid username length')) {
+        toast.error('Username must be between 3 and 20 characters');
+      } else if (errorMessage.includes('Invalid characters')) {
+        toast.error('Username can only contain letters, numbers, and underscores');
+      } else if (errorMessage.includes('already taken')) {
+        toast.error('This username is already taken. Please choose another.');
+      } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('not authenticated')) {
+        toast.error('You must be logged in to set a username');
+      } else {
+        toast.error(errorMessage);
+      }
+    },
+  });
+}
+
+// Username resolution hooks
+export function useGetUsernameForPrincipal(principal: Principal | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<string | null>({
+    queryKey: ['username', principal?.toString()],
+    queryFn: async () => {
+      if (!actor || !principal) return null;
+      return actor.getUsernameForPrincipal(principal);
+    },
+    enabled: !!actor && !actorFetching && !!principal,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+export function useGetPrincipalForUsername(username: string | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Principal | null>({
+    queryKey: ['principal', username],
+    queryFn: async () => {
+      if (!actor || !username) return null;
+      return actor.getPrincipalForUsername(username);
+    },
+    enabled: !!actor && !actorFetching && !!username && username.trim().length > 0,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+// Batch username resolution for lists
+export function useGetUsernamesForPrincipals(principals: Principal[]) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Map<string, string>>({
+    queryKey: ['usernames', principals.map(p => p.toString()).sort().join(',')],
+    queryFn: async () => {
+      if (!actor || principals.length === 0) return new Map();
+      
+      const usernameMap = new Map<string, string>();
+      
+      // Fetch usernames for all principals
+      await Promise.all(
+        principals.map(async (principal) => {
+          try {
+            const username = await actor.getUsernameForPrincipal(principal);
+            if (username) {
+              usernameMap.set(principal.toString(), username);
+            }
+          } catch (error) {
+            // Silently fail for individual lookups
+            console.warn(`Failed to fetch username for ${principal.toString()}`);
+          }
+        })
+      );
+      
+      return usernameMap;
+    },
+    enabled: !!actor && !actorFetching && principals.length > 0,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 }
 
@@ -468,7 +593,7 @@ export function useJoinRandomClan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clanMarketplace'] });
-      toast.success('Joined random clan successfully!');
+      toast.success('Joined a random clan!');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to join random clan');
@@ -543,7 +668,7 @@ export function useUnlockCrate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      toast.success('Crate unlocked! Reward claimed.');
+      toast.success('Crate unlocked! Treasure claimed.');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to unlock crate');
@@ -552,6 +677,19 @@ export function useUnlockCrate() {
 }
 
 // Admin Panel Events
+export function useGetAdminPanelEvents() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<AdminPanelEvent[]>({
+    queryKey: ['adminPanelEvents'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAdminPanelEventsForCaller();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
 export function useCreateAdminPanelEvent() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -571,29 +709,154 @@ export function useCreateAdminPanelEvent() {
   });
 }
 
-export function useGetAdminPanelEvents() {
+// Bot Combat
+export function useGetAllBots() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<AdminPanelEvent[]>({
-    queryKey: ['adminPanelEvents'],
+  return useQuery<Bot[]>({
+    queryKey: ['bots'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getAdminPanelEventsForCaller();
+      return actor.getAllBots();
     },
     enabled: !!actor && !actorFetching,
   });
 }
 
-// Social features
+export function useStartBotCombat() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (botId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.startBotCombat(botId);
+    },
+    onSuccess: () => {
+      toast.success('Bot combat started!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to start bot combat');
+    },
+  });
+}
+
+export function useAttackBot() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.attackBot();
+    },
+    onSuccess: (data: BotCombatStatus) => {
+      if (!data.combatOngoing) {
+        queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+        if (data.botHealth === 0n) {
+          toast.success('Victory! Bot defeated!');
+        } else {
+          toast.error('Defeated! Better luck next time.');
+        }
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Attack failed');
+    },
+  });
+}
+
+export function useGetBotCombatStatus() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<BotCombatStatus | null>({
+    queryKey: ['botCombatStatus'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getBotCombatStatus();
+    },
+    enabled: !!actor && !actorFetching,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      return data?.combatOngoing ? 1000 : false;
+    },
+  });
+}
+
+// Announcements
+export function useGetAllAnnouncements() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Announcement[]>({
+    queryKey: ['announcements'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAllAnnouncements();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useCreateAnnouncement() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ title, message }: { title: string; message: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createAnnouncement(title, message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+      toast.success('Announcement created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create announcement');
+    },
+  });
+}
+
+// Shop Items
+export function useGetAllShopItems() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<ShopItem[]>({
+    queryKey: ['shopItems'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAllShopItems();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function usePurchaseShopItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (itemId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.purchaseShopItem(itemId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      toast.success('Item purchased successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to purchase item');
+    },
+  });
+}
+
+// Social / Friends / Followers
 export function useFollowUser() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (targetPrincipal: string) => {
+    mutationFn: async (target: Principal) => {
       if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(targetPrincipal);
-      return actor.followUser(principal);
+      return actor.followUser(target);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
@@ -611,10 +874,9 @@ export function useUnfollowUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (targetPrincipal: string) => {
+    mutationFn: async (target: Principal) => {
       if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(targetPrincipal);
-      return actor.unfollowUser(principal);
+      return actor.unfollowUser(target);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['following'] });
@@ -666,141 +928,40 @@ export function useGetFriends() {
   });
 }
 
-// Bot Combat hooks
-export function useGetAllBots() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<Bot[]>({
-    queryKey: ['bots'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getAllBots();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function useStartBotCombat() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (botId: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.startBotCombat(botId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['botCombatStatus'] });
-      toast.success('Bot combat started!');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to start bot combat');
-    },
-  });
-}
-
-export function useAttackBot() {
+// Aura Clicker
+export function useClickAura() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.attackBot();
-    },
-    onSuccess: (data: BotCombatStatus) => {
-      queryClient.invalidateQueries({ queryKey: ['botCombatStatus'] });
-      if (!data.combatOngoing) {
-        queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-        if (data.botHealth === 0n) {
-          toast.success('Victory! Bot defeated!');
-        } else {
-          toast.error('Defeated! Better luck next time.');
-        }
-      }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Attack failed');
-    },
-  });
-}
-
-export function useGetBotCombatStatus() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<BotCombatStatus | null>({
-    queryKey: ['botCombatStatus'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getBotCombatStatus();
-    },
-    enabled: !!actor && !actorFetching,
-    refetchInterval: 1000,
-  });
-}
-
-// Announcements hooks
-export function useGetAllAnnouncements() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<Announcement[]>({
-    queryKey: ['announcements'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getAllAnnouncements();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function useCreateAnnouncement() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ title, message }: { title: string; message: string }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.createAnnouncement(title, message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements'] });
-      toast.success('Announcement created successfully!');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create announcement');
-    },
-  });
-}
-
-// Shop Items hooks
-export function useGetAllShopItems() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<ShopItem[]>({
-    queryKey: ['shopItems'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getAllShopItems();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function usePurchaseShopItem() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (itemId: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.purchaseShopItem(itemId);
+      return actor.clickAura();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      toast.success('Item purchased successfully!');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to purchase item');
+      toast.error(error.message || 'Failed to click aura');
+    },
+  });
+}
+
+export function useRebirth() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.rebirth();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      toast.success('Rebirth successful! Your multiplier has increased!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to rebirth');
     },
   });
 }

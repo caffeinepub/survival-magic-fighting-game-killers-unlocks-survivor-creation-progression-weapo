@@ -1,20 +1,19 @@
 import Array "mo:core/Array";
 import Bool "mo:core/Bool";
-import List "mo:core/List";
+import Char "mo:core/Char";
+import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
 import Text "mo:core/Text";
-import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Timer "mo:core/Timer";
 import Time "mo:core/Time";
-import Iter "mo:core/Iter";
+import Principal "mo:core/Principal";
 import Migration "migration";
-
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+// Add migration via with CLAUSE
 (with migration = Migration.run)
 actor {
   public type Killer = {
@@ -104,6 +103,7 @@ actor {
   };
 
   public type PlayerProfile = {
+    username : Text;
     currency : Nat;
     hasAdminPanel : Bool;
     killers : [Killer];
@@ -120,6 +120,11 @@ actor {
     inventory : [Text];
     collectedKeys : [Text];
     openedCrates : [Nat];
+    // Aura Clicker State
+    auraPower : Nat;
+    auraLevel : Nat;
+    rebirthCount : Nat;
+    rebirthMultiplier : Nat;
   };
 
   public type CombatStatus = {
@@ -148,6 +153,7 @@ actor {
   };
 
   public type UserProfile = PlayerProfile;
+
   public type Clan = {
     id : Nat;
     name : Text;
@@ -162,7 +168,6 @@ actor {
     leader : Principal;
     name : Text;
     active : Bool;
-    createClan : Bool;
     description : Text;
     imageUrl : Text;
     memberCount : Nat;
@@ -177,10 +182,11 @@ actor {
   let adminPanelEvents = Map.empty<Principal, Map.Map<Nat, AdminPanelEvent>>();
 
   let playerProfiles = Map.empty<Principal, PlayerProfile>();
+  let usernames = Map.empty<Text, Principal>(); // Text -> Principal
   let combatStatus = Map.empty<Principal, CombatStatus>();
-  var whyDontYouJoins = Map.empty<Nat, WhyDontYouJoin>();
-  var clans = Map.empty<Nat, Clan>();
-  var dungeons = Map.empty<Nat, Dungeon>();
+  let whyDontYouJoins = Map.empty<Nat, WhyDontYouJoin>();
+  let clans = Map.empty<Nat, Clan>();
+  let dungeons = Map.empty<Nat, Dungeon>();
 
   // Friends/Followers System
   let followers = Map.empty<Principal, Map.Map<Principal, ()>>();
@@ -290,6 +296,170 @@ actor {
     nextId;
   };
 
+  // Username Validation Logic
+  let minLength = 3;
+  let maxLength = 20;
+
+  // Active usernames
+
+  func isUsernameValid(username : Text) : Bool {
+    // Get the length of the username string
+    let length = getLength(username);
+
+    // Check if the length: is within range (between 3 and 20)
+    if (length < minLength or length > maxLength) {
+      return false;
+    };
+
+    // Helper function to check if a character is valid
+    func isValidChar(c : Char) : Bool {
+      // Accept [a-z, A-Z, 0-9, _] only
+      let asciiVal = c.toNat32();
+      (asciiVal >= 0x30 and asciiVal <= 0x39) or // 0-9
+      (asciiVal >= 0x41 and asciiVal <= 0x5A) or // A-Z
+      (asciiVal >= 0x61 and asciiVal <= 0x7A) or // a-z
+      (asciiVal == 0x5F) // Underscore
+    };
+
+    // Convert the username string to an array of characters using Text.toArray
+    let chars = username.toArray();
+
+    // Validate each character in the username
+    for (c in chars.values()) {
+      if (not isValidChar(c)) {
+        return false;
+      };
+    };
+
+    true;
+  };
+
+  // Helper function to get the length of a string (counts characters)
+  func getLength(t : Text) : Nat {
+    // Use Pattern/Matcher approach to count each character
+    let charIter = t.chars();
+    // Convert to array to get the length (in code points)
+    charIter.toArray().size();
+  };
+
+  public type UsernameUpdateResult = {
+    #success;
+    #invalidLength;
+    #invalidCharacters;
+    #alreadyTaken;
+    #internalError : Text;
+    #createdUsername : Text;
+  };
+
+  // Get currently set username for caller (user: only)
+  public query ({ caller }) func getCallerUsername() : async ?Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can fetch their username");
+    };
+
+    switch (playerProfiles.get(caller)) {
+      case (?profile) { ?profile.username };
+      case (null) { null };
+    };
+  };
+
+  // Resolve username to Principal (user only - for social features like following by username)
+  public query ({ caller }) func getUsernameForPrincipal(user : Principal) : async ?Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can resolve usernames");
+    };
+
+    switch (playerProfiles.get(user)) {
+      case (?profile) {
+        if (profile.username == "") {
+          null
+        } else {
+          ?profile.username
+        };
+      };
+      case (null) { null };
+    };
+  };
+
+  // Resolve Principal by username (user only - for social features like following by username)
+  public query ({ caller }) func getPrincipalForUsername(username : Text) : async ?Principal {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can resolve principals");
+    };
+
+    usernames.get(username);
+  };
+
+  // Check the validity of a given username
+  public query func checkUsername(username : Text) : async UsernameUpdateResult {
+    let length = getLength(username);
+    if (length < minLength or length > maxLength) {
+      Runtime.trap("Invalid username length, must be between 3 and 20");
+    };
+
+    if (not isUsernameValid(username)) {
+      Runtime.trap("Invalid characters in username");
+    };
+
+    switch (usernames.get(username)) {
+      case (?_existing) { Runtime.trap("Username already taken") };
+      case (null) {};
+    };
+
+    #success;
+  };
+
+  // Set initial username for caller (called on signup)
+  public shared ({ caller }) func setUsername(username : Text) : async UsernameUpdateResult {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can set username");
+    };
+
+    let result = checkUsernameInternal(username);
+    if (result != #success) {
+      return result;
+    };
+
+    // Update profile and username mapping
+    let profile = switch (playerProfiles.get(caller)) {
+      case (?p) { p };
+      case (null) {
+        return #internalError("User profile not found. Unexpected error.");
+      };
+    };
+
+    // Remove old username if exists
+    let oldUsername = profile.username;
+    if (oldUsername != "") {
+      usernames.remove(oldUsername);
+    };
+
+    // Add new mapping and update profile
+    usernames.add(username, caller);
+    playerProfiles.add(caller, { profile with username });
+
+    #createdUsername(username);
+  };
+
+  // Internal username check for update
+  func checkUsernameInternal(username : Text) : UsernameUpdateResult {
+    let length = getLength(username);
+    if (length < minLength or length > maxLength) {
+      return #invalidLength;
+    };
+
+    if (not isUsernameValid(username)) {
+      return #invalidCharacters;
+    };
+
+    switch (usernames.get(username)) {
+      case (?_existing) { return #alreadyTaken };
+      case (null) {};
+    };
+
+    #success;
+  };
+
   // Announcements - Admin can create, anyone (including guests) can view
   public shared ({ caller }) func createAnnouncement(title : Text, message : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
@@ -327,6 +497,13 @@ actor {
     shopItems.get(id);
   };
 
+  public query ({ caller }) func profileExists() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check profile existence");
+    };
+    playerProfiles.containsKey(caller);
+  };
+
   // Purchase shop item - User only
   public shared ({ caller }) func purchaseShopItem(itemId : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -346,7 +523,7 @@ actor {
           Runtime.trap("Insufficient funds to purchase this item");
         };
 
-        let updatedProfile = PlayerProfileExtensions.withCurrency(profile, profile.currency - item.price);
+        let updatedProfile = { profile with currency = profile.currency - item.price };
         playerProfiles.add(caller, updatedProfile);
       };
       case (null) {
@@ -460,7 +637,7 @@ actor {
       switch (playerProfiles.get(caller)) {
         case (?profile) {
           let newCurrency = profile.currency + bot.rewardCurrency;
-          let updatedProfile = PlayerProfileExtensions.withCurrency(profile, newCurrency);
+          let updatedProfile = { profile with currency = newCurrency };
           playerProfiles.add(caller, updatedProfile);
         };
         case (null) {};
@@ -772,11 +949,113 @@ actor {
     playerProfiles.get(user);
   };
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+  public shared ({ caller }) func createPlayerProfile() : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+      Runtime.trap("Unauthorized: Only users can create profiles");
     };
-    playerProfiles.add(caller, profile);
+
+    if (playerProfiles.containsKey(caller)) {
+      Runtime.trap("Profile already exists for this caller");
+    };
+
+    let newProfile : PlayerProfile = {
+      username = "";
+      currency = 0;
+      hasAdminPanel = false;
+      killers = [];
+      survivors = [];
+      weapons = [];
+      pets = [];
+      activeSurvivor = null;
+      equippedWeapon = null;
+      equippedPet = null;
+      storylineProgress = 0;
+      equippedArmor = null;
+      activeDungeonId = null;
+      completedQuests = [];
+      inventory = [];
+      collectedKeys = [];
+      openedCrates = [];
+      auraPower = 0;
+      auraLevel = 0;
+      rebirthCount = 0;
+      rebirthMultiplier = 0;
+    };
+
+    playerProfiles.add(caller, newProfile);
+  };
+
+  public shared ({ caller }) func clickAura() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can play Aura Clicker");
+    };
+
+    switch (playerProfiles.get(caller)) {
+      case (?profile) {
+        let auraIncrement = profile.rebirthMultiplier;
+        let newAuraPower = profile.auraPower + auraIncrement;
+
+        // Calculate level progression based on rebirth count
+        let levelRequirement = calculateLevelRequirement(profile.auraLevel, profile.rebirthCount);
+
+        var newAuraLevel = profile.auraLevel;
+        var remainingPower = newAuraPower;
+
+        // Auto-level up if power exceeds requirement
+        while (remainingPower >= levelRequirement) {
+          remainingPower := remainingPower - levelRequirement;
+          newAuraLevel := newAuraLevel + 1;
+        };
+
+        let updatedProfile = {
+          profile with
+          auraPower = remainingPower;
+          auraLevel = newAuraLevel;
+        };
+        playerProfiles.add(caller, updatedProfile);
+      };
+      case (null) {
+        Runtime.trap("User profile not found");
+      };
+    };
+  };
+
+  public shared ({ caller }) func rebirth() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can rebirth in Aura Clicker");
+    };
+
+    switch (playerProfiles.get(caller)) {
+      case (?profile) {
+        if (profile.rebirthCount >= 1_000_000) {
+          Runtime.trap("Maximum rebirth count reached (1,000,000)");
+        };
+
+        let newRebirthCount = profile.rebirthCount + 1;
+        let newMultiplier = newRebirthCount * 2;
+
+        let updatedProfile = {
+          profile with
+          auraPower = 0;
+          auraLevel = 1;
+          rebirthCount = newRebirthCount;
+          rebirthMultiplier = newMultiplier;
+        };
+        playerProfiles.add(caller, updatedProfile);
+      };
+      case (null) {
+        Runtime.trap("User profile not found");
+      };
+    };
+  };
+
+  // Helper function to calculate level requirement based on current level and rebirth count
+  func calculateLevelRequirement(level : Nat, rebirthCount : Nat) : Nat {
+    // Base requirement increases with level
+    let baseRequirement = level * 100;
+    // Each rebirth makes requirements harder (exponential growth)
+    let rebirthMultiplier = if (rebirthCount == 0) { 1 } else { rebirthCount * rebirthCount };
+    baseRequirement * rebirthMultiplier;
   };
 
   module PlayerProfileExtensions {
@@ -784,6 +1063,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = newKillers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -798,6 +1078,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -805,6 +1089,7 @@ actor {
       {
         currency = newCurrency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -819,6 +1104,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -826,6 +1115,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = newSurvivors;
         weapons = profile.weapons;
@@ -840,6 +1130,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -847,6 +1141,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -861,6 +1156,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -868,6 +1167,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = newWeapons;
@@ -882,6 +1182,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -889,6 +1193,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -903,6 +1208,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -910,6 +1219,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -924,6 +1234,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -931,6 +1245,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -945,6 +1260,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -952,6 +1271,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = hasPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -966,6 +1286,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -973,6 +1297,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -987,6 +1312,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = profile.openedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
 
@@ -994,6 +1323,7 @@ actor {
       {
         currency = profile.currency;
         hasAdminPanel = profile.hasAdminPanel;
+        username = profile.username;
         killers = profile.killers;
         survivors = profile.survivors;
         weapons = profile.weapons;
@@ -1008,6 +1338,10 @@ actor {
         inventory = profile.inventory;
         collectedKeys = profile.collectedKeys;
         openedCrates = newOpenedCrates;
+        auraPower = profile.auraPower;
+        auraLevel = profile.auraLevel;
+        rebirthCount = profile.rebirthCount;
+        rebirthMultiplier = profile.rebirthMultiplier;
       };
     };
   };

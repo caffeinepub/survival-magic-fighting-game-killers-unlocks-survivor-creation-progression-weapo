@@ -1,117 +1,165 @@
 {
   "kind": "build_request",
-  "title": "Add AI bot fights, expand Shop with more purchasable items, and add an Announcements page",
+  "title": "Add usernames and replace Principal ID display with username",
+  "projectName": "Arcane Survival",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-42",
-      "text": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
-      "target": "both",
+      "id": "REQ-58",
+      "text": "Extend the backend `PlayerProfile` model to persist a user-facing `username` string for each authenticated player, and enforce that usernames are unique across all players while still using `Principal` as the internal identifier.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "Add ai bots"
+          "Change Principal ID to username and add usernames"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a query to list AI bots (id, name, and combat stats/rewards) for the frontend to display.",
-        "Backend exposes a method to start a bot fight and returns the same kind of combat details used by the current combat UI (so existing battle rendering can be reused).",
-        "Bot fights use the same eligibility requirements as existing combat (authenticated user with an active survivor).",
-        "Winning a bot fight grants currency/EXP rewards to the caller and persists them in the caller’s profile.",
-        "Frontend adds a new section/tab in the Combat Arena UI to browse AI bots and start a bot fight.",
-        "Frontend uses React Query hooks and the existing toast success/error pattern for bot listing and bot fight actions, and invalidates/refetches currentUserProfile after fights that change rewards."
+        "A new `username` field exists in the persisted player profile data model.",
+        "The backend rejects creating/updating a username if it is already taken by another principal, returning a clear English error message.",
+        "The backend continues to use `Principal` as the canonical account identifier (usernames are display/lookup only)."
       ]
     },
     {
-      "id": "REQ-43",
-      "text": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
-      "target": "both",
+      "id": "REQ-59",
+      "text": "Update backend profile creation to require a username at creation time (or provide a dedicated username-setting method invoked immediately after creation), with validation and clear English errors (e.g., empty username, invalid characters, too short/too long, already taken).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "add more shop features"
+          "Change Principal ID to username and add usernames"
         ]
       },
       "acceptanceCriteria": [
-        "Backend provides a query to list shop items (stable ids, English name/description, price, and a clear item type/effect).",
-        "Backend provides a purchase method that validates the caller has a profile and sufficient currency, subtracts currency, and grants the item effect to the caller (e.g., adds to inventory/collectedKeys/weapons/pets as appropriate).",
-        "Shop purchases are persisted in the caller’s profile and are reflected on next profile fetch.",
-        "Frontend Shop page shows the Admin Panel card unchanged (still costs 1,000,000,000) and additionally renders the new shop items with price, affordability state, and a purchase button.",
-        "On successful purchase, the UI shows a success toast and refreshes the cached currentUserProfile; on failure, it shows the backend error via the existing toast pattern."
+        "A newly created profile always ends up with a non-empty username stored on-chain.",
+        "If the provided username is invalid or already taken, the backend call fails with an English error message that the frontend can display.",
+        "Existing backend authorization rules remain intact (only authenticated users can create/set their own username)."
       ]
     },
     {
-      "id": "REQ-44",
-      "text": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
+      "id": "REQ-60",
+      "text": "Add backend query method(s) to resolve usernames for principals and to resolve a principal by username, so the frontend can display usernames in social lists and allow following users by username.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change Principal ID to username and add usernames"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The backend exposes a query that can return a username for a given `Principal` (or a batch of principals).",
+        "The backend exposes a query that can return the `Principal` for a given username (or a clear not-found error/result).",
+        "All user-facing error strings returned by these methods are English."
+      ]
+    },
+    {
+      "id": "REQ-61",
+      "text": "If adding `username` to `PlayerProfile` is not backward-compatible with existing stable state, add a conditional state migration that safely upgrades existing stored profiles by assigning a default username and building any needed username index, without breaking upgrades.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change Principal ID to username and add usernames"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Upgrading the canister with pre-existing player profiles does not trap due to missing `username` field(s).",
+        "Existing players receive a deterministic default username (English-safe text) when none exists, and it does not violate uniqueness constraints.",
+        "The migration is only introduced if required by the platform’s upgrade policy for schema changes."
+      ]
+    },
+    {
+      "id": "REQ-62",
+      "text": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "add announcement page"
+          "Change Principal ID to username and add usernames"
         ]
       },
       "acceptanceCriteria": [
-        "A new page component (e.g., `AnnouncementsPage.tsx`) exists and renders a scrollable list of announcement entries using the existing UI card components styling pattern.",
-        "The app-level page union/routing state in `frontend/src/App.tsx` is extended to include the new announcements page id and renders the new page when selected.",
-        "`frontend/src/components/GameLayout.tsx` navigation includes a new \"Announcements\" item that navigates to the announcements page for authenticated users.",
-        "Any user-facing text on the Announcements page is in English."
+        "The primary labeled field on the profile setup screen is `Username` (not `Your Principal ID`).",
+        "The user can enter a username and submit profile creation; validation failures show clear English messages/toasts.",
+        "Principal ID is not the primary identifier on this screen; it is optional/secondary and still copyable when the identity is available."
       ]
     },
     {
-      "id": "REQ-45",
-      "text": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "add announcement page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend defines an Announcement model (id, title, body, timestamp) and stores announcements persistently.",
-        "Backend exposes a public query method to list announcements for authenticated users.",
-        "Backend exposes a create announcement method restricted to callers who have `hasAdminPanel = true`, rejecting others with a clear error message.",
-        "Frontend adds React Query hooks in `frontend/src/hooks/useQueries.ts` to list announcements and create an announcement using the existing toast success/error pattern and appropriate cache invalidation.",
-        "Frontend adds an Announcements creation UI for Admin Panel owners (either as a new Admin Panel tab or a clearly marked admin-only section) that submits title/body and then refreshes the announcements list."
-      ]
-    },
-    {
-      "id": "REQ-46",
-      "text": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
+      "id": "REQ-63",
+      "text": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "Add ai bots and add more shop features and add announcement page."
+          "Change Principal ID to username and add usernames"
         ]
       },
       "acceptanceCriteria": [
-        "The frontend TypeScript build succeeds with no Page-union type errors after adding the new Announcements page and any new combat/shop navigation.",
-        "Home page navigation callbacks remain functional and type-safe after the page set expands."
+        "Creating a profile from the UI sends the username to the backend successfully.",
+        "If the backend returns a username validation/uniqueness error, the user sees an English toast message and the button re-enables properly.",
+        "On success, `['currentUserProfile']` is invalidated/refetched and the app transitions out of the profile setup flow as before."
+      ]
+    },
+    {
+      "id": "REQ-64",
+      "text": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change Principal ID to username and add usernames"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Social page no longer asks for a 'Principal ID' as the primary input; it asks for a 'Username' with English helper text.",
+        "Following/unfollowing works via username input (the app resolves username to principal via backend method(s) and then performs follow/unfollow using existing backend logic).",
+        "Followers/Following/Friends lists display usernames when available; if a username cannot be resolved, the UI falls back to a shortened principal string.",
+        "All user-facing messages on this page remain English (including validation errors)."
+      ]
+    },
+    {
+      "id": "REQ-65",
+      "text": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change Principal ID to username and add usernames"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No primary, user-facing identity label in the app shows 'Principal ID' where 'Username' is intended as the main identifier.",
+        "The app still functions with Internet Identity and principals internally; changes are limited to display and username-based lookup UX.",
+        "Principal ID remains accessible where needed (secondary display/copy) and does not break existing flows."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko canister; keep all Motoko logic in `backend/main.mo`.",
-    "Only add/update `backend/migration.mo` if the upgrade requires migrating existing stable state (conditional migration policy).",
-    "Do not edit frontend files under `frontend/src/components/ui` or other `frontend.immutablePaths`; compose existing UI components instead.",
-    "Use English for all user-facing text."
+    "Backend must remain a single-actor Motoko canister (`backend/main.mo`), with all logic kept in that actor.",
+    "Only add a migration file if required by the platform’s conditional migration policy for backward-incompatible state changes.",
+    "Do not edit any frontend files under `frontend/src/components/ui` or other paths listed as immutable by system context.",
+    "Use English for all user-facing text (labels, helper text, toasts, error messages)."
   ],
   "nonGoals": [
-    "Implementing real-time multiplayer AI behavior (no WebSockets/real-time systems).",
-    "Third-party services or external databases for bots, shop, or announcements.",
-    "Replacing or removing the existing Updates page/tab (Announcements is a separate page).",
-    "Adding player search functionality (not requested in the latest message)."
+    "Implementing third-party authentication (only Internet Identity is used).",
+    "Building a full player search directory or public profile browsing experience beyond username resolution needed for follow/unfollow and display.",
+    "Changing the underlying friends/followers relationship model away from principals (principals remain the internal identifiers)."
   ],
   "imageRequirements": {
     "required": [],

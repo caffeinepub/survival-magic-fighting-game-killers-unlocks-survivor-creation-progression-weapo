@@ -1,11 +1,11 @@
 {
-  "frontend/src/App.tsx": "Main application component with routing logic, authentication gate, profile setup dialog, and page navigation including the new Announcements page.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including profile management, survivor creation, killer unlocking, inventory management, admin panel functions, combat system, clan operations, dungeon operations, social features, admin panel events, bot combat, announcements, and shop items with create/fetch functionality.",
+  "frontend/src/App.tsx": "Main application component with routing logic, authentication gate, profile setup dialog, and page navigation including the new Aura Clicker page ('aura').",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including new username-related queries (setUsername, getUsernameForPrincipal, getPrincipalForUsername, batch username resolution), with comprehensive error handling and user-friendly toast messages.",
   "frontend/src/components/AuthGate.tsx": "Authentication wrapper component that shows login screen for unauthenticated users and handles login/logout with query cache clearing.",
-  "frontend/src/components/GameLayout.tsx": "Shared layout component with header, navigation menu including Announcements tab with Bell icon, currency display, logout button, and footer with attribution.",
-  "frontend/src/components/ProfileSetupDialog.tsx": "Dialog component for first-time profile creation when a user logs in without an existing profile.",
+  "frontend/src/components/GameLayout.tsx": "Shared layout component with header displaying username badge when available, navigation menu, currency display, logout button, and footer with attribution.",
+  "frontend/src/components/ProfileSetupDialog.tsx": "Profile setup dialog with username as the primary input field, collapsible advanced section for Principal ID display and copy functionality, and integrated profile creation with username setting flow.",
   "frontend/src/components/ProgressionPanel.tsx": "Reusable component displaying survivor stats, level, and experience progress with visual indicators and icons.",
-  "frontend/src/pages/HomePage.tsx": "Landing page showing game overview, quick stats, and navigation cards to main game sections with updated Page type union.",
+  "frontend/src/pages/HomePage.tsx": "Landing page showing game overview, quick stats, and navigation cards to main game sections with updated Page type union to include 'aura'.",
   "frontend/src/pages/SurvivorsPage.tsx": "Page for creating and managing survivors with stat customization, active survivor selection, and progression display.",
   "frontend/src/pages/GameplayPage.tsx": "Combat arena page with tabbed interface for regular enemies, boss fights, and AI bots, displaying bot encounters with real-time battle tracking and victory/defeat handling.",
   "frontend/src/pages/InventoryPage.tsx": "Inventory management page displaying weapons and pets with equip/unequip functionality, stat bonuses, and updated empty state messages mentioning dungeon rewards.",
@@ -17,6 +17,7 @@
   "frontend/src/pages/ClansPage.tsx": "Multiplayer clans page with UI for creating clan listings, browsing active listings and existing clans, creating clans from listings, joining existing clans, and joining random clans with member counts and founder badges, using proper Principal-to-string conversions for comparisons.",
   "frontend/src/pages/DungeonPage.tsx": "Dungeon exploration page displaying dungeon maps with background images, quest management with start/complete actions, treasure crates with key requirements and unlock functionality, and visual feedback for completed quests and opened crates using generated assets.",
   "frontend/src/pages/UpdatesPage.tsx": "Updates page displaying a chronological list of game update entries with version numbers, dates, descriptions, and feature lists in a card-based layout.",
-  "frontend/src/pages/SocialPage.tsx": "Social page with tabbed interface for Friends and Followers, featuring Principal ID input for follow/unfollow actions, and lists displaying followers, following, and friends (mutual follows) with empty states.",
-  "frontend/src/pages/AnnouncementsPage.tsx": "Announcements page displaying a scrollable list of announcement entries with admin-only creation UI for users with Admin Panel access."
+  "frontend/src/pages/SocialPage.tsx": "Social page with username-first follow/unfollow input, batch username resolution for followers/following/friends lists with fallback to shortened principal display, and username-based lookup for social actions.",
+  "frontend/src/pages/AnnouncementsPage.tsx": "Announcements page displaying a scrollable list of announcement entries with admin-only creation UI for users with Admin Panel access.",
+  "frontend/src/pages/AuraClickerPage.tsx": "Aura Clicker page displaying real-time progression values (Aura Power, Aura Level, Rebirth Count, Multiplier) from backend, with click action to gain power, automatic level-up progress tracking, and rebirth functionality with confirmation dialog that is disabled when rebirth count reaches 1,000,000 with clear English explanations."
 }

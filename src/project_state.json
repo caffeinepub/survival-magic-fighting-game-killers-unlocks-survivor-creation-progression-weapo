@@ -1,11 +1,15 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 21,
-  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands (cost set to 1,000,000,000 currency), an Admin Panel Events tab for creating events, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks, social features (friends/followers), public chat with commands, an updates page/tab, and PvE dungeon map quests with key-locked crates that reward items/pets.",
+  "projectStateVersion": 29,
+  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands (cost set to 1,000,000,000 currency), an Admin Panel Events tab for creating events, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks, social features (friends/followers), public chat with commands, an updates page/tab, PvE dungeon map quests with key-locked crates that reward items/pets, and a new Aura Clicker meta-progression system with Aura Power clicking, aura levels, and rebirths that reset levels for a permanent multiplier with increasing difficulty per rebirth (max rebirths: 1,000,000).",
   "architectural_notes": [
-    "Admin panel purchase cost should be set to 1,000,000,000 in-game currency (update any constants/config and UI copy accordingly)."
+    "Admin panel purchase cost should be set to 1,000,000,000 in-game currency (update any constants/config and UI copy accordingly).",
+    "Introduce a user-facing `username` field on player profiles and prefer showing usernames in the UI; keep Principal IDs for internal identity/lookup (optionally still copyable/viewable in an advanced/details area)."
   ],
-  "known_issues": [],
+  "known_issues": [
+    "Create Profile screen needs to display/add Principal IDs (currently missing).",
+    "Create Profile button is not functioning (not a function / click handler broken)."
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
@@ -287,6 +291,86 @@
         "REQ-46"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-extend-frontend-src-hooks-usequeries-ts-with-react-query-hooks-for-the-aura-clicker-feature-including-mutations-for-1-clicking-to-gain-aura-power-and-2-rebirthing-using-the-existing-toast-success-error-pattern-and-invalidating-currentuserprofile-after-successful-mutations",
+      "title": "Extend `frontend/src/hooks/useQueries.ts` with React Query hooks for the Aura Clicker feature, including mutations for (1) clicking to gain Aura Power and (2) rebirthing, using the existing toast success/error pattern and invalidating `['currentUserProfile']` after successful mutations.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-authenticated-aura-clicker-page-in-the-react-frontend-that-lets-the-player-1-click-to-gain-aura-power-2-view-current-aura-power-aura-level-rebirth-count-and-current-multiplier-and-3-perform-a-rebirth-with-a-confirmation-step-while-clearly-communicating-that-rebirth-resets-aura-level-to-1-and-makes-future-progress-harder",
+      "title": "Create a new authenticated Aura Clicker page in the React frontend that lets the player: (1) click to gain Aura Power, (2) view current Aura Power, Aura Level, Rebirth Count, and current multiplier, and (3) perform a rebirth (with a confirmation step) while clearly communicating that rebirth resets Aura Level to 1 and makes future progress harder.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-integrate-aura-clicker-into-the-existing-in-app-navigation-and-routing-by-adding-a-new-page-id-e-g-aura-to-the-app-level-page-union-state-and-adding-a-corresponding-navigation-item-in-frontend-src-components-gamelayout-tsx-following-the-existing-navigation-patterns",
+      "title": "Integrate Aura Clicker into the existing in-app navigation and routing by adding a new page id (e.g., `aura`) to the App-level page union/state and adding a corresponding navigation item in `frontend/src/components/GameLayout.tsx`, following the existing navigation patterns.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-create-profile-screen-frontend-src-components-profilesetupdialog-tsx-to-display-the-currently-authenticated-user-s-internet-identity-principal-id-as-full-text-and-provide-a-one-click-way-to-copy-it-to-the-clipboard-using-english-user-facing-text",
+      "title": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to display the currently authenticated user’s Internet Identity Principal ID (as full text) and provide a one-click way to copy it to the clipboard, using English user-facing text.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-create-profile-flow-so-clicking-the-create-profile-button-on-the-profile-setup-screen-successfully-creates-a-player-profile-instead-of-throwing-a-runtime-error-like-is-not-a-function",
+      "title": "Fix the Create Profile flow so clicking the \"Create Profile\" button on the profile setup screen successfully creates a player profile instead of throwing a runtime error like \"... is not a function\".",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-profile-setup-ui-error-handling-so-if-profile-creation-fails-e-g-actor-unavailable-already-has-a-profile-authorization-issues-the-user-sees-an-english-toast-message-and-the-button-re-enables-correctly-no-stuck-loading-state",
+      "title": "Update the profile setup UI error handling so if profile creation fails (e.g., actor unavailable, already has a profile, authorization issues), the user sees an English toast message and the button re-enables correctly (no stuck loading state).",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-create-profile-screen-frontend-src-components-profilesetupdialog-tsx-to-collect-and-display-a-username-instead-of-focusing-on-principal-id-using-english-user-facing-text-keep-principal-id-available-only-as-a-secondary-advanced-piece-of-information-e-g-small-text-copy-button-so-the-user-can-still-copy-it-when-needed",
+      "title": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-react-query-hook-usecreateplayerprofile-in-frontend-src-hooks-usequeries-ts-to-pass-the-entered-username-to-the-backend-matching-the-updated-backend-method-signature-flow-and-keep-the-existing-toast-based-english-success-error-handling-pattern",
+      "title": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-social-page-frontend-src-pages-socialpage-tsx-ui-copy-and-behavior-to-use-usernames-as-the-primary-identifier-users-should-enter-a-username-to-follow-someone-and-followers-following-friends-lists-should-display-usernames-with-principal-as-an-optional-secondary-detail-fallback",
+      "title": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-any-other-prominent-ui-surfaces-that-currently-present-principal-id-as-the-player-s-identity-e-g-headers-profile-summaries-or-cards-so-they-display-username-instead-while-keeping-principal-id-internal-and-or-available-via-secondary-ui-where-appropriate",
+      "title": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -558,6 +642,96 @@
       "id": "AR-47",
       "summary": "Add an Announcements page/tab to view game announcements",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Add an Aura Clicker system where players click to gain Aura Power that levels up their aura level automatically when requirements are met",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "Add Aura Rebirth meta-progression: rebirth resets aura level to 1, grants a permanent multiplier, each rebirth is harder than the last, and max rebirths is 1,000,000",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Extend the backend `PlayerProfile` model in `backend/main.mo` to persist Aura Clicker progression state for each authenticated user: (1) total `auraPower`, (2) current `auraLevel`, (3) current `rebirthCount`, and (4) a permanent `rebirthMultiplier` (or equivalent value derivable from `rebirthCount`) that is applied to Aura Power gains.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Implement backend canister methods in `backend/main.mo` for Aura Clicker gameplay: (1) a method to perform a single click that increases Aura Power using the permanent rebirth multiplier, and (2) server-side logic to automatically increase Aura Level whenever Aura Power reaches the next level requirement.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-52",
+      "summary": "Implement backend rebirth logic in `backend/main.mo`: provide a rebirth method that resets Aura Power to 0 and Aura Level back to 1, increments `rebirthCount`, and increases the permanent multiplier; each rebirth must make level requirements harder than the previous rebirth; enforce a maximum rebirth count of exactly 1,000,000.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-53",
+      "summary": "Add a conditional state migration in `backend/migration.mo` (only if required by the existing upgrade policy) so that existing stored player profiles are upgraded safely with default Aura Clicker fields without breaking backward compatibility.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-55",
+      "summary": "Ensure the backend actor exposes the correct canister method used by the frontend to create a profile (currently called as actor.createPlayerProfile()), and that the method is included in the generated candid/TypeScript bindings so the frontend does not rely on an undefined method at runtime.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-56",
+      "summary": "Add user usernames: extend player profiles to store a username and update UI to display username instead of Principal ID (while still using Principal internally).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-57",
+      "summary": "Extend the backend `PlayerProfile` model to persist a user-facing `username` string for each authenticated player, and enforce that usernames are unique across all players while still using `Principal` as the internal identifier.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-58",
+      "summary": "Update backend profile creation to require a username at creation time (or provide a dedicated username-setting method invoked immediately after creation), with validation and clear English errors (e.g., empty username, invalid characters, too short/too long, already taken).",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-59",
+      "summary": "Add backend query method(s) to resolve usernames for principals and to resolve a principal by username, so the frontend can display usernames in social lists and allow following users by username.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-60",
+      "summary": "If adding `username` to `PlayerProfile` is not backward-compatible with existing stable state, add a conditional state migration that safely upgrades existing stored profiles by assigning a default username and building any needed username index, without breaking upgrades.",
+      "reqIds": [
+        "REQ-61"
+      ],
       "status": "pending"
     }
   ],

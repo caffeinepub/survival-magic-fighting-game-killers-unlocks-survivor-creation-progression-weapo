@@ -100,7 +100,9 @@ export interface Survivor {
   },
 }
 export interface UserProfile {
+  'rebirthCount' : bigint,
   'hasAdminPanel' : boolean,
+  'username' : string,
   'completedQuests' : Array<bigint>,
   'storylineProgress' : bigint,
   'activeDungeonId' : [] | [bigint],
@@ -108,18 +110,27 @@ export interface UserProfile {
   'pets' : Array<Pet>,
   'collectedKeys' : Array<string>,
   'survivors' : Array<Survivor>,
+  'auraLevel' : bigint,
   'activeSurvivor' : [] | [Survivor],
   'currency' : bigint,
+  'auraPower' : bigint,
   'equippedArmor' : [] | [bigint],
   'killers' : Array<Killer>,
   'weapons' : Array<Weapon>,
   'openedCrates' : Array<bigint>,
   'equippedWeapon' : [] | [Weapon],
+  'rebirthMultiplier' : bigint,
   'equippedPet' : [] | [Pet],
 }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export type UsernameUpdateResult = { 'alreadyTaken' : null } |
+  { 'createdUsername' : string } |
+  { 'internalError' : string } |
+  { 'invalidLength' : null } |
+  { 'success' : null } |
+  { 'invalidCharacters' : null };
 export interface Weapon {
   'name' : string,
   'defenseBonus' : bigint,
@@ -132,8 +143,11 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'attackBot' : ActorMethod<[], BotCombatStatus>,
+  'checkUsername' : ActorMethod<[string], UsernameUpdateResult>,
+  'clickAura' : ActorMethod<[], undefined>,
   'createAdminPanelEvent' : ActorMethod<[string, string, bigint], undefined>,
   'createAnnouncement' : ActorMethod<[string, string], undefined>,
+  'createPlayerProfile' : ActorMethod<[], undefined>,
   'followUser' : ActorMethod<[Principal], undefined>,
   'getAdminPanelEventsForCaller' : ActorMethod<[], Array<AdminPanelEvent>>,
   'getAdminPanelEventsForUser' : ActorMethod<
@@ -148,22 +162,27 @@ export interface _SERVICE {
   'getBotCombatStatus' : ActorMethod<[], [] | [BotCombatStatus]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCallerUsername' : ActorMethod<[], [] | [string]>,
   'getCallersFriends' : ActorMethod<[], Array<Principal>>,
+  'getPrincipalForUsername' : ActorMethod<[string], [] | [Principal]>,
   'getShopItem' : ActorMethod<[bigint], [] | [ShopItem]>,
   'getUserAdminPanelEvent' : ActorMethod<
     [Principal, bigint],
     [] | [AdminPanelEvent]
   >,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getUsernameForPrincipal' : ActorMethod<[Principal], [] | [string]>,
   'getUsersFriends' : ActorMethod<[Principal], Array<Principal>>,
   'getWhoCallerFollowing' : ActorMethod<[], Array<Principal>>,
   'getWhoIsFollowingCaller' : ActorMethod<[], Array<Principal>>,
   'getWhoIsFollowingUser' : ActorMethod<[Principal], Array<Principal>>,
   'getWhoUserIsFollowing' : ActorMethod<[Principal], Array<Principal>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'profileExists' : ActorMethod<[], boolean>,
   'purchaseAdminPanel' : ActorMethod<[], undefined>,
   'purchaseShopItem' : ActorMethod<[bigint], undefined>,
-  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'rebirth' : ActorMethod<[], undefined>,
+  'setUsername' : ActorMethod<[string], UsernameUpdateResult>,
   'startBotCombat' : ActorMethod<[bigint], BotCombatStatus>,
   'unfollowUser' : ActorMethod<[Principal], undefined>,
 }

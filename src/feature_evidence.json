@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-ai-bot-opponents-as-a-new-pve-combat-option-including-backend-apis-to-list-available-bots-and-start-fight-a-bot-using-the-existing-combat-flow-start-combat-attacks-and-reward-the-caller-on-victory",
-      "featureTitle": "Implement AI bot opponents as a new PvE combat option, including backend APIs to list available bots and start/fight a bot using the existing combat flow (start combat + attacks) and reward the caller on victory.",
+      "featureId": "feature-update-the-create-profile-screen-frontend-src-components-profilesetupdialog-tsx-to-collect-and-display-a-username-instead-of-focusing-on-principal-id-using-english-user-facing-text-keep-principal-id-available-only-as-a-secondary-advanced-piece-of-information-e-g-small-text-copy-button-so-the-user-can-still-copy-it-when-needed",
+      "featureTitle": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/GameplayPage.tsx"
+        "frontend/src/components/ProfileSetupDialog.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,16 +16,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-42"
+        "REQ-62"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-expand-the-shop-with-additional-purchasable-items-beyond-the-admin-panel-including-backend-definitions-for-shop-items-a-purchase-api-and-updated-shop-ui-to-browse-and-buy-these-items-using-in-game-currency",
-      "featureTitle": "Expand the Shop with additional purchasable items beyond the Admin Panel, including backend definitions for shop items, a purchase API, and updated Shop UI to browse and buy these items using in-game currency.",
+      "featureId": "feature-update-the-react-query-hook-usecreateplayerprofile-in-frontend-src-hooks-usequeries-ts-to-pass-the-entered-username-to-the-backend-matching-the-updated-backend-method-signature-flow-and-keep-the-existing-toast-based-english-success-error-handling-pattern",
+      "featureTitle": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ShopPage.tsx"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,17 +35,36 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-43"
+        "REQ-63"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-announcements-page-tab-reachable-from-the-main-in-app-navigation-for-authenticated-users-and-render-a-list-of-announcements-with-english-titles-dates-and-body-text",
-      "featureTitle": "Add an Announcements page/tab reachable from the main in-app navigation for authenticated users, and render a list of announcements with English titles, dates, and body text.",
+      "featureId": "feature-update-the-social-page-frontend-src-pages-socialpage-tsx-ui-copy-and-behavior-to-use-usernames-as-the-primary-identifier-users-should-enter-a-username-to-follow-someone-and-followers-following-friends-lists-should-display-usernames-with-principal-as-an-optional-secondary-detail-fallback",
+      "featureTitle": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
       "files": [
-        "frontend/src/App.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/SocialPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-64"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-any-other-prominent-ui-surfaces-that-currently-present-principal-id-as-the-player-s-identity-e-g-headers-profile-summaries-or-cards-so-they-display-username-instead-while-keeping-principal-id-internal-and-or-available-via-secondary-ui-where-appropriate",
+      "featureTitle": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+      "files": [
         "frontend/src/components/GameLayout.tsx",
-        "frontend/src/pages/AnnouncementsPage.tsx"
+        "frontend/src/components/ProfileSetupDialog.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -58,48 +75,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-44"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-persist-and-serve-announcements-from-the-backend-and-allow-admin-panel-owners-to-create-announcements-to-populate-the-announcements-page-using-english-user-facing-copy",
-      "featureTitle": "Persist and serve announcements from the backend, and allow Admin Panel owners to create announcements (to populate the Announcements page) using English user-facing copy.",
-      "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/AnnouncementsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-45"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-any-local-frontend-page-type-unions-used-by-navigation-helpers-e-g-the-page-type-in-frontend-src-pages-homepage-tsx-so-they-remain-compatible-with-the-app-s-expanded-navigation-pages-and-do-not-cause-typescript-type-errors",
-      "featureTitle": "Update any local frontend Page type unions used by navigation helpers (e.g., the `Page` type in `frontend/src/pages/HomePage.tsx`) so they remain compatible with the app’s expanded navigation pages and do not cause TypeScript type errors.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/GameLayout.tsx",
-        "frontend/src/pages/HomePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-46"
+        "REQ-65"
       ],
       "confidence": "high"
     }
