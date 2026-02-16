@@ -1,10 +1,11 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 29,
-  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands (cost set to 1,000,000,000 currency), an Admin Panel Events tab for creating events, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks, social features (friends/followers), public chat with commands, an updates page/tab, PvE dungeon map quests with key-locked crates that reward items/pets, and a new Aura Clicker meta-progression system with Aura Power clicking, aura levels, and rebirths that reset levels for a permanent multiplier with increasing difficulty per rebirth (max rebirths: 1,000,000).",
+  "projectStateVersion": 31,
+  "summary": "Game concept: a survival/fighting game with magic/aura featuring unlockable killers, player-created survivors, progression (levels/stats/EXP), weapons and pets, in-game currency rewards, a paid admin panel with full commands (cost set to 1,000,000,000 currency), an Admin Panel Events tab for creating events, planned multiplayer features (including clans and additional boss encounters), plus public user profiles with editable settings/ranks, social features (friends/followers) using usernames, public chat with commands, an updates page/tab, PvE dungeon map quests with key-locked crates that reward items/pets, a new Aura Clicker meta-progression system with Aura Power clicking, aura levels, and rebirths, and a new 3D interactive dungeon model experience embedded in the Dungeons tab.",
   "architectural_notes": [
     "Admin panel purchase cost should be set to 1,000,000,000 in-game currency (update any constants/config and UI copy accordingly).",
-    "Introduce a user-facing `username` field on player profiles and prefer showing usernames in the UI; keep Principal IDs for internal identity/lookup (optionally still copyable/viewable in an advanced/details area)."
+    "Introduce a user-facing `username` field on player profiles and prefer showing usernames in the UI; keep Principal IDs for internal identity/lookup (optionally still copyable/viewable in an advanced/details area).",
+    "3D content: implement Dungeons tab 3D dungeon model using React Three Fiber with GLB/GLTF assets loaded from the frontend (no backend image/model serving), with performance-friendly defaults (lazy load, reasonable poly count, controls)."
   ],
   "known_issues": [
     "Create Profile screen needs to display/add Principal IDs (currently missing).",
@@ -371,6 +372,38 @@
         "REQ-65"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-embed-an-interactive-3d-dungeon-scene-into-the-dungeons-tab-frontend-src-pages-dungeonpage-tsx-above-the-existing-dungeon-quest-crate-lists-implemented-with-react-three-fiber-so-authenticated-users-can-rotate-zoom-pan-the-dungeon-model",
+      "title": "Embed an interactive 3D dungeon scene into the Dungeons tab (`frontend/src/pages/DungeonPage.tsx`) above the existing dungeon/quest/crate lists, implemented with React Three Fiber, so authenticated users can rotate/zoom/pan the dungeon model.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-interactivity-inside-the-3d-dungeon-scene-so-the-user-can-click-at-least-two-types-of-hotspots-quest-and-crate-and-have-the-ui-react-by-selecting-highlighting-the-matching-quest-or-crate-in-the-existing-list-ui-for-the-currently-displayed-dungeon-card",
+      "title": "Add interactivity inside the 3D dungeon scene so the user can click at least two types of hotspots (Quest and Crate) and have the UI react by selecting/highlighting the matching quest or crate in the existing list UI for the currently displayed dungeon card.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-required-3d-asset-s-for-the-dungeon-model-as-static-frontend-assets-no-backend-serving-and-load-them-from-the-dungeons-page-3d-scene",
+      "title": "Add the required 3D asset(s) for the dungeon model as static frontend assets (no backend serving) and load them from the Dungeons page 3D scene.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-3d-dungeon-viewer-matches-the-existing-game-ui-theme-and-layout-conventions-card-styling-spacing-dark-fantasy-ember-palette-without-changing-the-existing-navigation-or-backend-apis",
+      "title": "Ensure the 3D dungeon viewer matches the existing game UI theme and layout conventions (card styling, spacing, dark fantasy/ember palette) without changing the existing navigation or backend APIs.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -733,8 +766,33 @@
         "REQ-61"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-61",
+      "summary": "Add username resolution in UI lists (e.g., friends/followers/following) so usernames display instead of principals wherever possible",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-62",
+      "summary": "Add a player-to-player selling/marketplace feature in the Shop so users can sell items to other players",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-63",
+      "summary": "Add a new currency called Coins (separate from existing currency) and integrate it into the Shop economy",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-64",
+      "summary": "Add an interactive 3D dungeon model inside the Dungeons tab/page (3D viewer/scene embedded in the Dungeons UI)",
+      "reqIds": [],
+      "status": "pending"
     }
   ],
+  "gameProjectType": "3d",
   "projectName": "Survival Magic Fighting Game: Killers Unlocks, Survivor Creation, Progression, Weapons/Pets, Admin Panel Purchase",
   "clarification_mode": "instant",
   "clarification_rounds": 0

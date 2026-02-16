@@ -9,12 +9,12 @@ import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Principal "mo:core/Principal";
-import Migration "migration";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 // Add migration via with CLAUSE
-(with migration = Migration.run)
+
 actor {
   public type Killer = {
     id : Nat;

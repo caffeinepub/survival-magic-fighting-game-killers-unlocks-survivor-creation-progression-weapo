@@ -1,108 +1,84 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T15:54:33.506Z",
+  "generatedAt": "2026-02-16T22:32:26.628Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 8,
+    "total": 4,
     "implemented": 4,
     "items": [
       {
-        "id": "REQ-58",
-        "summary": "Extend the backend `PlayerProfile` model to persist a user-facing `username` string for each authenticated player, and enforce that usernames are unique across all players while still using `Principal` as the internal identifier.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-59",
-        "summary": "Update backend profile creation to require a username at creation time (or provide a dedicated username-setting method invoked immediately after creation), with validation and clear English errors (e.g., empty username, invalid characters, too short/too long, already taken).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-60",
-        "summary": "Add backend query method(s) to resolve usernames for principals and to resolve a principal by username, so the frontend can display usernames in social lists and allow following users by username.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-61",
-        "summary": "If adding `username` to `PlayerProfile` is not backward-compatible with existing stable state, add a conditional state migration that safely upgrades existing stored profiles by assigning a default username and building any needed username index, without breaking upgrades.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-62",
-        "summary": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
+        "id": "REQ-66",
+        "summary": "Embed an interactive 3D dungeon scene into the Dungeons tab (`frontend/src/pages/DungeonPage.tsx`) above the existing dungeon/quest/crate lists, implemented with React Three Fiber, so authenticated users can rotate/zoom/pan the dungeon model.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProfileSetupDialog.tsx"
+          "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "frontend/src/pages/DungeonPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProfileSetupDialog.tsx"
+          "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "frontend/src/pages/DungeonPage.tsx"
         ]
       },
       {
-        "id": "REQ-63",
-        "summary": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
+        "id": "REQ-67",
+        "summary": "Add interactivity inside the 3D dungeon scene so the user can click at least two types of hotspots (Quest and Crate) and have the UI react by selecting/highlighting the matching quest or crate in the existing list UI for the currently displayed dungeon card.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+          "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+          "frontend/src/pages/DungeonPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+          "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+          "frontend/src/pages/DungeonPage.tsx"
         ]
       },
       {
-        "id": "REQ-64",
-        "summary": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
+        "id": "REQ-68",
+        "summary": "Add the required 3D asset(s) for the dungeon model as static frontend assets (no backend serving) and load them from the Dungeons page 3D scene.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/SocialPage.tsx"
+          "frontend/public/assets/dungeon/dungeon-room.glb",
+          "frontend/public/assets/dungeon/dungeon-room-texture.png",
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/SocialPage.tsx"
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx"
         ]
       },
       {
-        "id": "REQ-65",
-        "summary": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+        "id": "REQ-69",
+        "summary": "Ensure the 3D dungeon viewer matches the existing game UI theme and layout conventions (card styling, spacing, dark fantasy/ember palette) without changing the existing navigation or backend APIs.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/GameLayout.tsx",
-          "frontend/src/components/ProfileSetupDialog.tsx"
+          "frontend/src/pages/DungeonPage.tsx",
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/components/GameLayout.tsx",
-          "frontend/src/components/ProfileSetupDialog.tsx"
+          "frontend/src/pages/DungeonPage.tsx",
+          "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/GameLayout.tsx",
-    "frontend/src/components/ProfileSetupDialog.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/SocialPage.tsx",
+    "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+    "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+    "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+    "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+    "frontend/src/pages/DungeonPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

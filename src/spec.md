@@ -1,16 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add user-facing usernames and replace prominent Principal ID displays with usernames while keeping Principals as the internal account identifier.
+**Goal:** Add an interactive 3D dungeon viewer to the Dungeons tab that lets authenticated users explore a dungeon scene and select quests/crates via clickable hotspots.
 
 **Planned changes:**
-- Extend the backend `PlayerProfile` model to persist a unique `username` per principal and enforce global uniqueness with clear English errors.
-- Require setting a valid, non-empty username during profile creation (or immediately after via a dedicated method), including validation (format/length/characters/uniqueness) and English error messages.
-- Add backend query method(s) to resolve username(s) from principal(s) and resolve a principal by username for social features.
-- If needed for upgrades, add a conditional migration to safely populate deterministic default usernames for existing profiles and build any required username index.
-- Update the profile setup UI to collect a `Username` as the primary field, with Principal ID shown only as secondary/advanced copyable info.
-- Update `useCreatePlayerProfile` to send the username to the backend and preserve existing toast-based success/error handling and refetch behavior.
-- Update the Social page to follow/unfollow via username input and display usernames in lists (with principal as secondary/fallback), using English UI copy and messages.
-- Update other prominent UI surfaces that currently show “Principal ID” as the player identity to display username instead, keeping principal accessible only as secondary where appropriate.
+- Embed a React Three Fiber 3D viewport in `frontend/src/pages/DungeonPage.tsx` above the existing dungeon/quest/crate lists, supporting rotate/zoom (pan optional).
+- Add quest and crate hotspot markers inside the 3D scene; clicking a hotspot highlights and scrolls to the matching quest/crate card in the existing list UI for the currently displayed dungeon.
+- Add static 3D dungeon model asset(s) to the frontend and load them in the 3D scene with an English loading state.
+- Add an English fallback message when WebGL is unavailable or the 3D scene fails to load, while keeping the rest of the Dungeons UI functional.
+- Style the 3D viewer to match the existing dark fantasy/ember UI theme and layout conventions without changing navigation or backend APIs.
 
-**User-visible outcome:** Players choose a unique username during profile setup; the app primarily shows usernames (including in Social follow/unfollow and lists) while still using Principals internally and keeping Principal ID available as secondary info when needed.
+**User-visible outcome:** On the Dungeons tab, users see a themed 3D dungeon scene they can rotate/zoom; clicking quest/crate markers highlights and scrolls to the corresponding items in the lists below, with loading and fallback messaging in English.

@@ -1,165 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Add usernames and replace Principal ID display with username",
+  "title": "Add an interactive 3D dungeon model to the Dungeons tab",
   "projectName": "Arcane Survival",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-58",
-      "text": "Extend the backend `PlayerProfile` model to persist a user-facing `username` string for each authenticated player, and enforce that usernames are unique across all players while still using `Principal` as the internal identifier.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Change Principal ID to username and add usernames"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new `username` field exists in the persisted player profile data model.",
-        "The backend rejects creating/updating a username if it is already taken by another principal, returning a clear English error message.",
-        "The backend continues to use `Principal` as the canonical account identifier (usernames are display/lookup only)."
-      ]
-    },
-    {
-      "id": "REQ-59",
-      "text": "Update backend profile creation to require a username at creation time (or provide a dedicated username-setting method invoked immediately after creation), with validation and clear English errors (e.g., empty username, invalid characters, too short/too long, already taken).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Change Principal ID to username and add usernames"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A newly created profile always ends up with a non-empty username stored on-chain.",
-        "If the provided username is invalid or already taken, the backend call fails with an English error message that the frontend can display.",
-        "Existing backend authorization rules remain intact (only authenticated users can create/set their own username)."
-      ]
-    },
-    {
-      "id": "REQ-60",
-      "text": "Add backend query method(s) to resolve usernames for principals and to resolve a principal by username, so the frontend can display usernames in social lists and allow following users by username.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Change Principal ID to username and add usernames"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The backend exposes a query that can return a username for a given `Principal` (or a batch of principals).",
-        "The backend exposes a query that can return the `Principal` for a given username (or a clear not-found error/result).",
-        "All user-facing error strings returned by these methods are English."
-      ]
-    },
-    {
-      "id": "REQ-61",
-      "text": "If adding `username` to `PlayerProfile` is not backward-compatible with existing stable state, add a conditional state migration that safely upgrades existing stored profiles by assigning a default username and building any needed username index, without breaking upgrades.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Change Principal ID to username and add usernames"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Upgrading the canister with pre-existing player profiles does not trap due to missing `username` field(s).",
-        "Existing players receive a deterministic default username (English-safe text) when none exists, and it does not violate uniqueness constraints.",
-        "The migration is only introduced if required by the platform’s upgrade policy for schema changes."
-      ]
-    },
-    {
-      "id": "REQ-62",
-      "text": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
+      "id": "REQ-66",
+      "text": "Embed an interactive 3D dungeon scene into the Dungeons tab (`frontend/src/pages/DungeonPage.tsx`) above the existing dungeon/quest/crate lists, implemented with React Three Fiber, so authenticated users can rotate/zoom/pan the dungeon model.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Change Principal ID to username and add usernames"
+          "Make a 3d interactive 3d model of a dungeon at the dungeons tab."
         ]
       },
       "acceptanceCriteria": [
-        "The primary labeled field on the profile setup screen is `Username` (not `Your Principal ID`).",
-        "The user can enter a username and submit profile creation; validation failures show clear English messages/toasts.",
-        "Principal ID is not the primary identifier on this screen; it is optional/secondary and still copyable when the identity is available."
+        "When visiting the Dungeons tab, a 3D viewport is visible above the existing dungeon content (quests/crates UI remains available below).",
+        "The 3D dungeon view supports mouse/touch interaction: rotate and zoom at minimum (pan optional).",
+        "If WebGL is unavailable or the scene fails to load, the page shows an English fallback message and the rest of the Dungeons UI still works."
       ]
     },
     {
-      "id": "REQ-63",
-      "text": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
+      "id": "REQ-67",
+      "text": "Add interactivity inside the 3D dungeon scene so the user can click at least two types of hotspots (Quest and Crate) and have the UI react by selecting/highlighting the matching quest or crate in the existing list UI for the currently displayed dungeon card.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Change Principal ID to username and add usernames"
+          "Make a 3d interactive 3d model of a dungeon at the dungeons tab."
         ]
       },
       "acceptanceCriteria": [
-        "Creating a profile from the UI sends the username to the backend successfully.",
-        "If the backend returns a username validation/uniqueness error, the user sees an English toast message and the button re-enables properly.",
-        "On success, `['currentUserProfile']` is invalidated/refetched and the app transitions out of the profile setup flow as before."
+        "The 3D scene renders visible hotspots/markers for quests and crates (visual differentiation such as color/shape).",
+        "Clicking a Quest hotspot highlights the corresponding quest card in the list (e.g., with a border/outline) and scrolls it into view when possible.",
+        "Clicking a Crate hotspot highlights the corresponding crate card in the list and scrolls it into view when possible.",
+        "User-facing helper text is in English (e.g., “Click a marker to view the matching quest or crate”)."
       ]
     },
     {
-      "id": "REQ-64",
-      "text": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
+      "id": "REQ-68",
+      "text": "Add the required 3D asset(s) for the dungeon model as static frontend assets (no backend serving) and load them from the Dungeons page 3D scene.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Change Principal ID to username and add usernames"
+          "Make a 3d interactive 3d model of a dungeon at the dungeons tab."
         ]
       },
       "acceptanceCriteria": [
-        "The Social page no longer asks for a 'Principal ID' as the primary input; it asks for a 'Username' with English helper text.",
-        "Following/unfollowing works via username input (the app resolves username to principal via backend method(s) and then performs follow/unfollow using existing backend logic).",
-        "Followers/Following/Friends lists display usernames when available; if a username cannot be resolved, the UI falls back to a shortened principal string.",
-        "All user-facing messages on this page remain English (including validation errors)."
+        "All 3D model assets are stored and loaded as static files from the frontend (not fetched from the backend canister).",
+        "The 3D scene displays a dungeon-like model (not just a blank scene) and loads successfully in production build.",
+        "A loading state is shown while the 3D asset is being loaded, using English text."
       ]
     },
     {
-      "id": "REQ-65",
-      "text": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+      "id": "REQ-69",
+      "text": "Ensure the 3D dungeon viewer matches the existing game UI theme and layout conventions (card styling, spacing, dark fantasy/ember palette) without changing the existing navigation or backend APIs.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Change Principal ID to username and add usernames"
+          "Make a 3d interactive 3d model of a dungeon at the dungeons tab."
         ]
       },
       "acceptanceCriteria": [
-        "No primary, user-facing identity label in the app shows 'Principal ID' where 'Username' is intended as the main identifier.",
-        "The app still functions with Internet Identity and principals internally; changes are limited to display and username-based lookup UX.",
-        "Principal ID remains accessible where needed (secondary display/copy) and does not break existing flows."
+        "The 3D viewer is contained within the existing Dungeons page layout and does not visually clash with the current theme (dark background + ember primary).",
+        "No changes are required to backend canister APIs for this feature."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko canister (`backend/main.mo`), with all logic kept in that actor.",
-    "Only add a migration file if required by the platform’s conditional migration policy for backward-incompatible state changes.",
-    "Do not edit any frontend files under `frontend/src/components/ui` or other paths listed as immutable by system context.",
-    "Use English for all user-facing text (labels, helper text, toasts, error messages)."
+    "Do not edit files under `frontend/src/components/ui` (compose existing UI components instead).",
+    "Do not edit any paths listed in `frontend.immutablePaths` in SYSTEM_CONTEXT.",
+    "Backend must remain single-actor; this feature should not require backend changes.",
+    "Do not serve 3D assets from the backend; treat them as static frontend assets."
   ],
   "nonGoals": [
-    "Implementing third-party authentication (only Internet Identity is used).",
-    "Building a full player search directory or public profile browsing experience beyond username resolution needed for follow/unfollow and display.",
-    "Changing the underlying friends/followers relationship model away from principals (principals remain the internal identifiers)."
+    "Do not add multiplayer or real-time features (no WebSockets).",
+    "Do not create a full 3D game loop or combat inside the 3D scene; the 3D model is a navigable/interactive viewer for the Dungeons tab.",
+    "Do not introduce external 3D asset hosting/CDNs; keep assets within the frontend project."
   ],
   "imageRequirements": {
     "required": [],

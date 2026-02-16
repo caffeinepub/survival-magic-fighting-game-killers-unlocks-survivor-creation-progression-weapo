@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-create-profile-screen-frontend-src-components-profilesetupdialog-tsx-to-collect-and-display-a-username-instead-of-focusing-on-principal-id-using-english-user-facing-text-keep-principal-id-available-only-as-a-secondary-advanced-piece-of-information-e-g-small-text-copy-button-so-the-user-can-still-copy-it-when-needed",
-      "featureTitle": "Update the Create Profile screen (`frontend/src/components/ProfileSetupDialog.tsx`) to collect and display a username instead of focusing on Principal ID, using English user-facing text. Keep Principal ID available only as a secondary/advanced piece of information (e.g., small text + copy button) so the user can still copy it when needed.",
+      "featureId": "feature-embed-an-interactive-3d-dungeon-scene-into-the-dungeons-tab-frontend-src-pages-dungeonpage-tsx-above-the-existing-dungeon-quest-crate-lists-implemented-with-react-three-fiber-so-authenticated-users-can-rotate-zoom-pan-the-dungeon-model",
+      "featureTitle": "Embed an interactive 3D dungeon scene into the Dungeons tab (`frontend/src/pages/DungeonPage.tsx`) above the existing dungeon/quest/crate lists, implemented with React Three Fiber, so authenticated users can rotate/zoom/pan the dungeon model.",
       "files": [
-        "frontend/src/components/ProfileSetupDialog.tsx"
+        "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+        "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+        "frontend/src/pages/DungeonPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -16,15 +18,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-62"
+        "REQ-66"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-react-query-hook-usecreateplayerprofile-in-frontend-src-hooks-usequeries-ts-to-pass-the-entered-username-to-the-backend-matching-the-updated-backend-method-signature-flow-and-keep-the-existing-toast-based-english-success-error-handling-pattern",
-      "featureTitle": "Update the React Query hook `useCreatePlayerProfile` in `frontend/src/hooks/useQueries.ts` to pass the entered username to the backend (matching the updated backend method signature/flow), and keep the existing toast-based English success/error handling pattern.",
+      "featureId": "feature-add-interactivity-inside-the-3d-dungeon-scene-so-the-user-can-click-at-least-two-types-of-hotspots-quest-and-crate-and-have-the-ui-react-by-selecting-highlighting-the-matching-quest-or-crate-in-the-existing-list-ui-for-the-currently-displayed-dungeon-card",
+      "featureTitle": "Add interactivity inside the 3D dungeon scene so the user can click at least two types of hotspots (Quest and Crate) and have the UI react by selecting/highlighting the matching quest or crate in the existing list UI for the currently displayed dungeon card.",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+        "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+        "frontend/src/pages/DungeonPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -35,16 +39,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-63"
+        "REQ-67"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-social-page-frontend-src-pages-socialpage-tsx-ui-copy-and-behavior-to-use-usernames-as-the-primary-identifier-users-should-enter-a-username-to-follow-someone-and-followers-following-friends-lists-should-display-usernames-with-principal-as-an-optional-secondary-detail-fallback",
-      "featureTitle": "Update the Social page (`frontend/src/pages/SocialPage.tsx`) UI copy and behavior to use usernames as the primary identifier: users should enter a username to follow someone, and followers/following/friends lists should display usernames (with Principal as an optional secondary detail/fallback).",
+      "featureId": "feature-add-the-required-3d-asset-s-for-the-dungeon-model-as-static-frontend-assets-no-backend-serving-and-load-them-from-the-dungeons-page-3d-scene",
+      "featureTitle": "Add the required 3D asset(s) for the dungeon model as static frontend assets (no backend serving) and load them from the Dungeons page 3D scene.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/SocialPage.tsx"
+        "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -55,16 +58,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-64"
+        "REQ-68"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-any-other-prominent-ui-surfaces-that-currently-present-principal-id-as-the-player-s-identity-e-g-headers-profile-summaries-or-cards-so-they-display-username-instead-while-keeping-principal-id-internal-and-or-available-via-secondary-ui-where-appropriate",
-      "featureTitle": "Update any other prominent UI surfaces that currently present 'Principal ID' as the player’s identity (e.g., headers, profile summaries, or cards) so they display username instead, while keeping Principal ID internal and/or available via secondary UI where appropriate.",
+      "featureId": "feature-ensure-the-3d-dungeon-viewer-matches-the-existing-game-ui-theme-and-layout-conventions-card-styling-spacing-dark-fantasy-ember-palette-without-changing-the-existing-navigation-or-backend-apis",
+      "featureTitle": "Ensure the 3D dungeon viewer matches the existing game UI theme and layout conventions (card styling, spacing, dark fantasy/ember palette) without changing the existing navigation or backend APIs.",
       "files": [
-        "frontend/src/components/GameLayout.tsx",
-        "frontend/src/components/ProfileSetupDialog.tsx"
+        "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+        "frontend/src/pages/DungeonPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -75,7 +78,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-65"
+        "REQ-69"
       ],
       "confidence": "high"
     }

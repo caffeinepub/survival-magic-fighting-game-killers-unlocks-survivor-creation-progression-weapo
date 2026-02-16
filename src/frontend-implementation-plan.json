@@ -1,80 +1,109 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Usernames-first UI (profile setup + social) with principal as secondary",
+  "title": "Interactive 3D dungeon viewer in Dungeons tab (React Three Fiber)",
   "requirements": [
     {
-      "id": "REQ-62",
-      "summary": "Collect username during profile setup and demote Principal ID to secondary/copy-only info",
+      "id": "REQ-66",
+      "summary": "Embed an interactive 3D dungeon viewer above the existing quests/crates UI on the Dungeons page using React Three Fiber, with rotate/zoom controls for authenticated users and a resilient fallback when WebGL/scene load fails.",
       "acceptanceCriteria": [
-        "The primary labeled field on the profile setup screen is `Username` (not `Your Principal ID`).",
-        "The user can enter a username and submit profile creation; validation failures show clear English messages/toasts.",
-        "Principal ID is not the primary identifier on this screen; it is optional/secondary and still copyable when the identity is available."
+        "When visiting the Dungeons tab, a 3D viewport is visible above the existing dungeon content (quests/crates UI remains available below).",
+        "The 3D dungeon view supports mouse/touch interaction: rotate and zoom at minimum (pan optional).",
+        "If WebGL is unavailable or the scene fails to load, the page shows an English fallback message and the rest of the Dungeons UI still works."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProfileSetupDialog.tsx",
-          "operation": "modify",
-          "description": "Update the dialog UI to add a primary Username input (English label + helper text), submit using the updated create profile flow, and move Principal ID into a secondary/advanced section with the existing copy button. Ensure submit is disabled appropriately while identity is unavailable or mutation is pending. Use the selected \"authorization\" component guidance for user profile setup UX (avoid making principal the primary identifier). Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-63",
-      "summary": "Pass username through the create profile React Query flow and preserve toast + refetch behavior",
-      "acceptanceCriteria": [
-        "Creating a profile from the UI sends the username to the backend successfully.",
-        "If the backend returns a username validation/uniqueness error, the user sees an English toast message and the button re-enables properly.",
-        "On success, `['currentUserProfile']` is invalidated/refetched and the app transitions out of the profile setup flow as before."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update `useCreatePlayerProfile` to accept a `username` parameter and perform the updated backend flow (e.g., create profile then set username, or a single updated create call if the backend signature changes). Map backend username validation/uniqueness results (e.g., invalid length/characters, already taken, internal error) into clear English toasts, and keep the existing success toast and `['currentUserProfile']` invalidate/refetch pattern. Use the selected \"authorization\" component's frontend guidance for profile setup flow behavior. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-64",
-      "summary": "Switch Social page follow/unfollow input and lists to be username-first with principal fallback",
-      "acceptanceCriteria": [
-        "The Social page no longer asks for a 'Principal ID' as the primary input; it asks for a 'Username' with English helper text.",
-        "Following/unfollowing works via username input (the app resolves username to principal via backend method(s) and then performs follow/unfollow using existing backend logic).",
-        "Followers/Following/Friends lists display usernames when available; if a username cannot be resolved, the UI falls back to a shortened principal string.",
-        "All user-facing messages on this page remain English (including validation errors)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add React Query helpers needed by SocialPage for username-based social UX: (1) a mutation/query to resolve a Principal from a username (using the backend capability), (2) a query to resolve usernames for lists of principals (with caching; fall back when not found), and (3) optionally a wrapper mutation to follow/unfollow by username that composes resolve + existing follow/unfollow mutations. Ensure all surfaced errors are clear English. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+          "operation": "create",
+          "description": "Create a small utility/hook to detect WebGL availability (and optionally reduced-motion) so the Dungeons page can decide whether to render the 3D Canvas or an English fallback message."
         },
         {
-          "path": "frontend/src/pages/SocialPage.tsx",
+          "path": "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "operation": "create",
+          "description": "Create a reusable 3D viewer component implemented with React Three Fiber (3D game: 3D game viewer, not a game loop) that renders a Canvas with camera + lighting + orbit-style controls (rotate/zoom; pan optional), and exposes callbacks for marker clicks and load/error state. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/DungeonPage.tsx",
           "operation": "modify",
-          "description": "Replace Principal-ID input with a Username input and English helper text. On submit, resolve username -> principal via the backend capability and then follow/unfollow using the existing follow/unfollow logic. Update followers/following/friends list rendering to show resolved usernames as the primary line, with shortened principal as secondary detail/fallback. Keep validation and user-facing messages in English."
+          "description": "Wire the new DungeonSceneViewer into the Dungeons tab above the existing quests/crates sections (within each dungeon card or a single active card), only rendering the 3D viewer for authenticated users (the app already uses an AuthGate). Add an English fallback block when WebGL is unavailable or the 3D scene throws/returns an error, ensuring the existing lists continue to render."
         }
       ]
     },
     {
-      "id": "REQ-65",
-      "summary": "Replace other prominent 'Principal ID' identity displays with username-first UI while keeping principal accessible secondarily",
+      "id": "REQ-67",
+      "summary": "Add clickable 3D hotspots for Quest and Crate within the dungeon scene, and sync clicks to highlight + scroll the matching quest/crate card in the existing list UI for the same dungeon card.",
       "acceptanceCriteria": [
-        "No primary, user-facing identity label in the app shows 'Principal ID' where 'Username' is intended as the main identifier.",
-        "The app still functions with Internet Identity and principals internally; changes are limited to display and username-based lookup UX.",
-        "Principal ID remains accessible where needed (secondary display/copy) and does not break existing flows."
+        "The 3D scene renders visible hotspots/markers for quests and crates (visual differentiation such as color/shape).",
+        "Clicking a Quest hotspot highlights the corresponding quest card in the list (e.g., with a border/outline) and scrolls it into view when possible.",
+        "Clicking a Crate hotspot highlights the corresponding crate card in the list and scrolls it into view when possible.",
+        "User-facing helper text is in English (e.g., “Click a marker to view the matching quest or crate”)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/GameLayout.tsx",
-          "operation": "modify",
-          "description": "Add a small username-first identity display in the header (e.g., show `profile.username` when available) to reinforce usernames as the primary identity, without exposing Principal ID as the main label. Keep any principal usage internal/secondary if added. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+          "operation": "create",
+          "description": "Create a small 3D hotspot marker component for React Three Fiber that visually differentiates Quest vs Crate (e.g., color/geometry) and supports pointer click/hover for selection feedback. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/ProfileSetupDialog.tsx",
+          "path": "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+          "operation": "create",
+          "description": "Define a simple mapping from dungeon quest/crate IDs to stable 3D positions (and type metadata) used by the scene to place Quest and Crate hotspots; keep it deterministic so clicks can reliably target list items."
+        },
+        {
+          "path": "frontend/src/pages/DungeonPage.tsx",
           "operation": "modify",
-          "description": "Ensure any remaining prominent references to 'Principal ID' are demoted to secondary/advanced copy-only context (labels and helper text remain English), aligning the overall identity presentation with username-first UX."
+          "description": "Add UI state for selected questId/crateId per dungeon card, add refs/anchors to quest and crate cards, and implement highlight styling + scrollIntoView on selection. Connect DungeonSceneViewer marker click callbacks to select the corresponding quest/crate in the existing list, and render English helper text near the viewer (e.g., “Click a marker to view the matching quest or crate”)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-68",
+      "summary": "Add static 3D dungeon model assets to the frontend and load them from the Dungeons page 3D scene with an English loading state.",
+      "acceptanceCriteria": [
+        "All 3D model assets are stored and loaded as static files from the frontend (not fetched from the backend canister).",
+        "The 3D scene displays a dungeon-like model (not just a blank scene) and loads successfully in production build.",
+        "A loading state is shown while the 3D asset is being loaded, using English text."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/dungeon/dungeon-room.glb",
+          "operation": "create",
+          "description": "Add a dungeon-like 3D model as a static frontend asset (GLB) to be loaded by the React Three Fiber scene (no backend serving)."
+        },
+        {
+          "path": "frontend/public/assets/dungeon/dungeon-room-texture.png",
+          "operation": "create",
+          "description": "Add any required static texture(s) referenced by the dungeon-room.glb so the model loads correctly in production builds."
+        },
+        {
+          "path": "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "operation": "modify",
+          "description": "Load the static model from frontend/public (e.g., via a GLTF loader), show an English loading UI while the asset is being fetched/parsed (Suspense fallback or internal loading overlay), and surface a load failure state so the page can render the required fallback message. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-69",
+      "summary": "Match the 3D viewer styling to the existing Arcane Survival dark fantasy/ember theme and keep all changes within the current Dungeons layout without altering navigation or backend APIs.",
+      "acceptanceCriteria": [
+        "The 3D viewer is contained within the existing Dungeons page layout and does not visually clash with the current theme (dark background + ember primary).",
+        "No changes are required to backend canister APIs for this feature."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/DungeonPage.tsx",
+          "operation": "modify",
+          "description": "Wrap the 3D viewer in existing Card styling conventions (dark background, border, spacing) and ensure it fits above the existing quest/crate lists without changing navigation. Keep all data interactions frontend-only using existing hooks; do not introduce backend API changes."
+        },
+        {
+          "path": "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+          "operation": "modify",
+          "description": "Tune viewer presentation (background color, subtle vignette/gradient overlay, marker colors matching ember primary) to match the current theme and layout conventions while keeping the component self-contained. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "If needed, add minimal theme-consistent utility styles for the 3D viewer container (e.g., focus ring/outline for selected list items) using existing global styling entry points, without changing overall navigation/layout behavior."
         }
       ]
     }

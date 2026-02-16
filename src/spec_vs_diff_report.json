@@ -1,82 +1,36 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T15:54:33.502Z",
-  "summary": "Diff implements username UI in profile setup and social page, adds a `username` field to the backend `PlayerProfile`, introduces a `usernames` index map, and wires in a migration hook. However, the diff summary does not provide enough evidence that backend username validation/uniqueness enforcement, username resolution query methods, or deterministic default-username migration behavior are fully implemented. Some unrelated UI/navigation changes (e.g., Aura page/nav) also appear.",
+  "generatedAt": "2026-02-16T22:32:26.623Z",
+  "summary": "Diff adds a React Three Fiber-based 3D viewer to DungeonPage with WebGL support detection, hotspot markers for quests/crates, and click-to-select + scroll behavior. However, the implementation appears to use procedural geometry (floor/walls) and does not show any added static 3D model assets being loaded, so the “dungeon model asset(s) as static frontend assets” requirement is not evidenced.",
   "missing_requirements": [
     {
-      "id": "REQ-58",
-      "requirement": "Enforce that usernames are unique across all players and reject creating/updating a username if already taken, returning a clear English error message.",
-      "reason": "The diff shows a new `usernames` map and a `username` field, but does not show any backend logic that checks the index and rejects duplicates with an English error message.",
+      "id": "REQ-68",
+      "requirement": "Add the required 3D asset(s) for the dungeon model as static frontend assets (no backend serving) and load them from the Dungeons page 3D scene.",
+      "reason": "No 3D asset files (e.g., .glb/.gltf/textures) are added in the diff summary, and the 3D scene shown is built from basic primitives (plane/box) rather than loading a dungeon model from static frontend assets. While a loading overlay exists, there is no evidence of an asset loader (e.g., useGLTF) or static asset path usage.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-59",
-      "requirement": "Require a username at profile creation time (or via a dedicated username-setting method invoked immediately after creation) with validation (empty/invalid chars/length/already taken) and clear English errors.",
-      "reason": "Frontend uses a two-step flow (create profile then set username), but the diff summary does not include the backend `setUsername` implementation nor any shown validation rules/error strings. Frontend-side hints are not sufficient to prove backend enforcement.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/ProfileSetupDialog.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-60",
-      "requirement": "Expose backend query method(s) to resolve username for principal(s) and resolve principal by username, with English not-found/errors.",
-      "reason": "Frontend adds hooks that call `getPrincipalForUsername` and batch username resolution, but the backend diff snippet does not show these query methods or their error behavior.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/pages/SocialPage.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-61",
-      "requirement": "If needed, add a conditional migration that assigns deterministic default usernames for existing profiles and builds any needed username index without trapping on upgrade.",
-      "reason": "A migration hook and `backend/migration.mo` are added, but the diff content shown is truncated and does not evidence assigning deterministic unique default usernames or rebuilding the username index for existing profiles.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-65",
-      "requirement": "Update other prominent UI surfaces that present 'Principal ID' as the player identity to display username instead, keeping Principal ID secondary where appropriate.",
-      "reason": "Only `GameLayout` header badge and the profile setup/social page changes are evidenced. The diff summary does not demonstrate updates across other prominent identity surfaces (e.g., other headers/cards/profile summaries) beyond those files.",
-      "evidence": [
-        "frontend/src/components/GameLayout.tsx",
-        "frontend-file-summaries.txt"
+        "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+        "frontend/src/components/dungeon3d (added files list shows only TS/TSX, no asset files)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/featured an 'Aura' page/navigation item and related UI/icon usage.",
-      "reason": "Aura-related navigation and page-type union are not part of the username/principal-display BuildRequest requirements.",
+      "description": "Collapsible/optional 3D viewer toggle state (e.g., show/hide 3D viewer) added to DungeonPage.",
+      "reason": "The BuildRequest asks to embed the 3D viewer above the lists, but does not request a user-toggle to show/hide the viewer. The diff shows `show3DViewer` state, implying additional UI/behavior beyond the requested requirements.",
       "evidence": [
-        "frontend/src/components/GameLayout.tsx",
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Large unrelated gameplay/UI feature descriptions (killers unlock list changes, dungeon features, etc.) included in the frontend summaries file.",
-      "reason": "These features are not requested by the BuildRequest (which is scoped to username/principal display and lookup). The only direct evidence is the documentation/summary content, not necessarily code changes, but it is still an unrequested addition in the diff.",
-      "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend/src/pages/DungeonPage.tsx"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.74,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/GameLayout.tsx",
-    "frontend/src/components/ProfileSetupDialog.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/SocialPage.tsx",
+    "frontend/src/components/dungeon3d/DungeonSceneViewer.tsx",
+    "frontend/src/components/dungeon3d/HotspotMarker.tsx",
+    "frontend/src/components/dungeon3d/dungeonHotspots.ts",
+    "frontend/src/components/dungeon3d/useWebGLSupport.ts",
+    "frontend/src/pages/DungeonPage.tsx",
     "project_state.json"
   ]
 }
